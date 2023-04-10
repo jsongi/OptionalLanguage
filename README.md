@@ -8,7 +8,7 @@ Compiler Name: `Required`
 
 | Language Feature | Code Example |
 |----------------------|---------|
-|Integer scalar variables|`isv x; isv y; isv sum, avg`|
+|Integer scalar variables|`# x; # y; # sum, avg`|
 |One-dimensional arrays of integers|`isv a[]; isv a[5];`|
 |Assignment Statements|`a <- b; a <- 5;`|
 |Arithmetic Operators|`a + b; a - b; a * b; a / c; a % b;`|
@@ -21,7 +21,7 @@ Compiler Name: `Required`
 
 |Symbols|Tokens|
 |---------|-----|
-|isv|INT|
+|#|INT|
 |variable|IDENT|
 |get|READ|
 |give|WRITE|
