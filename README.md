@@ -8,16 +8,16 @@ Compiler Name: `Required`
 
 | Language Feature | Code Example |
 |----------------------|---------|
-|Integer scalar variables|`# x; # y; # sum, avg;`|
-|One-dimensional arrays of integers|`#[] a; #[5] a; a[3] <- a[4]`|
-|Assignment Statements|`a <- b; a <- 5;`|
-|Arithmetic Operators|`a + b; a - b; a * b; a / c; a % b;`|
-|Relational Operators|`a < b; a = b; a > b; a =/= c; a <= b; a >= b;`|
-|While Loop|`whilst (); exit; next;`|
+|Integer scalar variables|<pre># x;<br># y;<br># sum, avg;</pre>|
+|One-dimensional arrays of integers|<pre>#[] a; #[5] a; a[3] <- a[4]</pre>|
+|Assignment Statements|<pre>a <- b;<br>a <- 5;</pre>|
+|Arithmetic Operators|<pre>a + b;<br>a - b;<br>a * b;<br>a / c;<br>a % b;</pre>|
+|Relational Operators|<pre>a < b;<br>a = b;<br>a > b;<br>a =/= c;<br>a <= b;<br>a >= b;</pre>|
+|While Loop|<pre>whilst ()<br>    exit;<br>    next;</pre>|
 |If-then-else Statements|<pre>if () {<br>    ... <br>}<br>otherwise {<br>    ... <br>}</pre>|
-|Read and Write Statements|`get a; give a;`|
-|Comments|`~ Comment ~`|
-|Functions|`myFunction: (input_a, input_b) { ... return; }`|
+|Read and Write Statements|<pre>get a;<br>give a;</pre>|
+|Comments|<pre>~ Comment ~</pre>|
+|Functions|<pre>myFunction: (input_a, input_b) {<br>    return;<br>}</pre>|
 
 |Symbols|Tokens|
 |---------|-----|
