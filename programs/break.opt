@@ -1,0 +1,14 @@
+
+~ break.opt ~
+main(){
+    # i;
+    i <- 0;
+    whilst(i <= 10){ ~This is a simple loop with an exit (break) statement~
+        give i;
+        
+        if (i > 3){
+            exit;
+        }
+        i <- i + 1;
+    }
+}
