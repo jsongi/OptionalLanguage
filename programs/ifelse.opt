@@ -1,0 +1,17 @@
+main: () {
+  # a;
+  # b;
+  # c;
+
+~ main program ~
+
+  get b;
+  if b >= 50
+    give b;
+  otherwise
+  {
+    a <- b-1;
+    give a;
+  }
+give o;
+}
