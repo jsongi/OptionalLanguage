@@ -1,11 +1,25 @@
 # OptionalLanguage
 
+## Language Information
 Programming Language: `Optional`
 
 Extension: `.opt`
 
 Compiler Name: `Required`
 
+## Comments
+Comments start after `~` and end with another `~`.
+
+## Valid Names
+A valid identifier can be any string that begins with any uppercase or lowercase letter, and optionally followed by any number of uppercase or lowercase letters, digits, or underscore only.
+
+## Case Sensitive
+The language is case sensitive.
+
+## Whitespace
+A single space character is considered white space, and the language ignores it.
+
+## Features and Examples
 | Language Feature | Code Example |
 |----------------------|---------|
 |Integer scalar variables|<pre># x;<br># y;<br># sum, avg;</pre>|
@@ -19,6 +33,7 @@ Compiler Name: `Required`
 |Comments|<pre>~ Comment ~</pre>|
 |Functions|<pre>myFunction: (input_a, input_b) {<br>    return;<br>}</pre>|
 
+## Symbols and Tokens
 |Symbols|Tokens|
 |---------|-----|
 |#|INT|
