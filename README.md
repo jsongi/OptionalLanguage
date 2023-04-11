@@ -13,8 +13,8 @@ Compiler Name: `Required`
 |Assignment Statements|<pre>a <- b;<br>a <- 5;</pre>|
 |Arithmetic Operators|<pre>a + b;<br>a - b;<br>a * b;<br>a / c;<br>a % b;</pre>|
 |Relational Operators|<pre>a < b;<br>a = b;<br>a > b;<br>a =/= c;<br>a <= b;<br>a >= b;</pre>|
-|While Loop|<pre>whilst ()<br>    exit;<br>    next;</pre>|
-|If-then-else Statements|<pre>if () {<br>    ... <br>}<br>otherwise {<br>    ... <br>}</pre>|
+|While Loop|<pre>whilst (a = b) {<br>    exit;<br>    next;<br>}</pre>|
+|If-then-else Statements|<pre>if (a = b) {<br>    ... <br>}<br>otherwise {<br>    ... <br>}</pre>|
 |Read and Write Statements|<pre>get a;<br>give a;</pre>|
 |Comments|<pre>~ Comment ~</pre>|
 |Functions|<pre>myFunction: (input_a, input_b) {<br>    return;<br>}</pre>|
