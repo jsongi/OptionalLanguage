@@ -49,6 +49,7 @@ A single space character is considered white space, and the language ignores it.
 |]|RBRACK|
 |(|LPAREN|
 |)|RPAREN|
+|,|COMMA|
 |;|ENDLINE|
 |<-|ASSIGN|
 |+|ADD|
