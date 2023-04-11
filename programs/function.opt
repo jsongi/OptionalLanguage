@@ -1,0 +1,22 @@
+add: (a, b) {
+    return a + b;
+}
+
+mult: (a, b) {
+    return a * b;
+}
+
+main() {
+  # a;
+  # b;
+  # c;
+  # d;	
+
+  a <- 100;
+  b <- 50;
+  c <- add(a, b);
+  give c;        ~ should print 150 ~
+
+  d <- mult(c, a + b);
+  give d;        ~ should print "22500", since 22500 = 150 * 150; ~
+}
