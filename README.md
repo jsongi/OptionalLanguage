@@ -14,7 +14,7 @@ Compiler Name: `Required`
 |Arithmetic Operators|`a + b; a - b; a * b; a / c; a % b;`|
 |Relational Operators|`a < b; a = b; a > b; a =/= c; a <= b; a >= b;`|
 |While Loop|`whilst (); exit; next;`|
-|If-then-else Statements|`if () ... otherwise ...`|
+|If-then-else Statements|<pre>if () {<br>    ... <br>}<br>otherwise {<br>    ... <br>}</pre>|
 |Read and Write Statements|`get a; give a;`|
 |Comments|`~ Comment ~`|
 |Functions|`myFunction: (input_a, input_b) { ... return; }`|
