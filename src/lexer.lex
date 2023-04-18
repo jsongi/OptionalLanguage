@@ -58,7 +58,7 @@ return { printf("RETURN\n"); columnNum += 6; }
 [\t] { columnNum++; }
 [\n] { columnNum = 1; }
 
-. { printf("**Error. Unidentified token '%s'\n", yytext); }
+. { printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", yylineno, columnNum, yytext); columnNum++; }
 
 %%
 
