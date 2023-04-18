@@ -1,59 +1,62 @@
 %{
 #include <stdio.h>
+
+int columnNum = 1;
 %}
+%option yylineno
 
 DIGIT [0-9]
 ALPHA [a-zA-Z]
 
 %%
 
-"#" { printf("ISV\n"); }
+"#" { printf("ISV\n"); columnNum++; }
 
-get { printf("READ\n"); }
-give { printf("WRITE\n"); }
-whilst { printf("WHILE\n"); }
-exit { printf("EXIT\n"); }
-next { printf("CONTINUE\n"); }
-if { printf("IF\n"); }
-otherwise { printf("ELSE\n"); }
-return { printf("RETURN\n"); }
+get { printf("READ\n"); columnNum += 3; }
+give { printf("WRITE\n"); columnNum += 4; }
+whilst { printf("WHILE\n"); columnNum += 5; }
+exit { printf("EXIT\n"); columnNum += 4; }
+next { printf("CONTINUE\n"); columnNum += 4; }
+if { printf("IF\n"); columnNum += 2; }
+otherwise { printf("ELSE\n"); columnNum += 8; }
+return { printf("RETURN\n"); columnNum += 6; }
 
-"[" { printf("LBRACK\n"); }
-"]" { printf("RBRACK\n"); }
+"[" { printf("LBRACK\n"); columnNum++; }
+"]" { printf("RBRACK\n"); columnNum++; }
 
-"{" { printf("LBRACE\n"); }
-"}" { printf("RBRACE\n"); }
+"{" { printf("LBRACE\n"); columnNum++; }
+"}" { printf("RBRACE\n"); columnNum++; }
 
-"(" { printf("LPAREN\n"); }
-")" { printf("RPAREN\n"); }
+"(" { printf("LPAREN\n"); columnNum++; }
+")" { printf("RPAREN\n"); columnNum++; }
 
-"<-" { printf("ASSIGN\n"); }
+"<-" { printf("ASSIGN\n"); columnNum += 2; }
 
-"+" { printf("ADD\n"); }
-"-" { printf("SUBTRACT\n"); }
-"*" { printf("MULTIPLY\n"); }
-"/" { printf("DIVIDE\n"); }
-"%" { printf("MODULO\n"); }
+"+" { printf("ADD\n"); columnNum++; }
+"-" { printf("SUBTRACT\n"); columnNum++; }
+"*" { printf("MULTIPLY\n"); columnNum++; }
+"/" { printf("DIVIDE\n"); columnNum++; }
+"%" { printf("MODULO\n"); columnNum++; }
 
-"<" { printf("LESSTHAN\n"); }
-"=" { printf("EQUAL\n"); }
-">" { printf("GREATERTHAN\n"); }
-"=/=" { printf("NOTEQUAL\n"); }
-"<=" { printf("LESSOREQUAL\n"); }
-">=" { printf("GREATEROREQUAL\n"); }
+"<" { printf("LESSTHAN\n"); columnNum++; }
+"=" { printf("EQUAL\n"); columnNum++; }
+">" { printf("GREATERTHAN\n"); columnNum++; }
+"=/=" { printf("NOTEQUAL\n"); columnNum += 3; }
+"<=" { printf("LESSOREQUAL\n"); columnNum += 2; }
+">=" { printf("GREATEROREQUAL\n"); columnNum += 2; }
 
-"," { printf("COMMA\n"); }
-";" { printf("ENDLINE\n"); }
-":" { printf("FUNCTION\n"); }
+"," { printf("COMMA\n"); columnNum++; }
+";" { printf("ENDLINE\n"); columnNum++; }
+":" { printf("FUNCTION\n"); columnNum++; }
 
-{ALPHA}+({ALPHA}|{DIGIT}|_)* { printf("IDENT %s\n", yytext); }
-{DIGIT}+ { printf("NUMBER %s\n", yytext); }
+{ALPHA}+({ALPHA}|{DIGIT}|_)* { printf("IDENT %s\n", yytext); columnNum += strlen(yytext); }
+{DIGIT}+ { printf("NUMBER %s\n", yytext); columnNum += strlen(yytext); }
 
-~.+~
+~.+~ { columnNum += strlen(yytext); }
 
-" " { }
-[\t] { }
-[\n] { }
+" " { columnNum++; }
+[\t] { columnNum++; }
+[\n] { columnNum = 1; }
 
 . { printf("**Error. Unidentified token '%s'\n", yytext); }
 
