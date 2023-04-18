@@ -51,6 +51,10 @@ return { printf("RETURN\n"); }
 
 ~.+~
 
+" " { }
+[\t] { }
+[\n] { }
+
 . { printf("**Error. Unidentified token '%s'\n", yytext); }
 
 %%
