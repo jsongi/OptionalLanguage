@@ -52,8 +52,8 @@ return { printf("RETURN\n"); columnNum += 6; }
 {ALPHA}+({ALPHA}|{DIGIT}|_)* { printf("IDENT %s\n", yytext); columnNum += strlen(yytext); }
 {DIGIT}+ { printf("NUMBER %s\n", yytext); columnNum += strlen(yytext); }
 
-{DIGIT}({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with a digit\n", yylineno, columnNum, yytext); }
-_({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with an underscore\n", yylineno, columnNum, yytext); }
+{DIGIT}({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with a digit\n", yylineno, columnNum, yytext); columnNum += strlen(yytext); }
+_({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with an underscore\n", yylineno, columnNum, yytext); columnNum += strlen(yytext); }
 
 ~.+~ { columnNum += strlen(yytext); }
 
