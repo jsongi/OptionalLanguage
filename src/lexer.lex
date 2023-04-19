@@ -7,6 +7,7 @@ int columnNum = 1;
 
 DIGIT [0-9]
 ALPHA [a-zA-Z]
+VALID [{DIGIT}|{ALPHA}|_]
 
 %%
 
@@ -52,9 +53,9 @@ return { printf("RETURN\n"); columnNum += 6; }
 {ALPHA}+({ALPHA}|{DIGIT}|_)* { printf("IDENT %s\n", yytext); columnNum += strlen(yytext); }
 {DIGIT}+ { printf("NUMBER %s\n", yytext); columnNum += strlen(yytext); }
 
-{DIGIT}+.* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with a digit\n", yylineno, columnNum, yytext); }
-_+.* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with an underscore\n", yylineno, columnNum, yytext); }
-{ALPHA}+.* { printf("Error at line %d, column %d: identifier \"%s\" cannot have characters outside of alphabet, digit, or underscore\n", yylineno, columnNum, yytext); }
+{DIGIT}+{VALID}* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with a digit\n", yylineno, columnNum, yytext); }
+_+{VALID}* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with an underscore\n", yylineno, columnNum, yytext); }
+{ALPHA}+{VALID}* { printf("Error at line %d, column %d: identifier \"%s\" cannot have characters outside of alphabet, digit, or underscore\n", yylineno, columnNum, yytext); }
 
 ~.+~ { columnNum += strlen(yytext); }
 
