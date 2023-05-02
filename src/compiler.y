@@ -2,6 +2,7 @@
 #include <stdio.h>
 extern FILE* yyin;
 void yyerror(char const *msg);
+int yylex();
 %}
 
 
