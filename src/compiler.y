@@ -42,7 +42,7 @@ statement : declaration ENDLINE { printf("statement -> declaration\n"); } |
 			whilst { printf("statement -> whilst\n"); } | 
 			ext { printf("statement -> ext\n"); } | 
 			assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | 
-			array_init ENDLINE { printf("statement -> array_init"); };
+			array_init ENDLINE { printf("statement -> array_init\n"); };
 
 declaration : ISV IDENT { printf("declaration -> ISV IDENT\n"); } | 
 			  ISV IDENT COMMA declaration_cont { printf("declaration -> ISV IDENT COMMA declaration_cont\n"); } | 
@@ -99,7 +99,7 @@ relational_symbol : LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } |
 					LESSOREQUAL { printf("relation_symbol -> LESSOREQUAL\n"); } | 
 					GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
 
-array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK NUMBER RBRACK IDENT ENDLINE\n"); };
+array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK NUMBER RBRACK IDENT\n"); };
 
 array_access : IDENT LBRACK expression RBRACK { printf("array_access -> IDENT LBRACK NUMBER RBRACK\n"); };
 
