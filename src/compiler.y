@@ -3,6 +3,7 @@
 extern FILE* yyin;
 void yyerror(char const *msg);
 int yylex();
+extern int yylineno;
 %}
 
 
@@ -42,7 +43,6 @@ statement : declaration ENDLINE { printf("statement -> declaration\n"); } |
 			ext { printf("statement -> ext\n"); } | 
 			assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | 
 			expression ENDLINE { printf("statement -> expression ENDLINE\n"); } | 
-			relational { printf("statement -> relational\n"); } | 
 			array_init ENDLINE { printf("statement -> array_init"); };
 
 declaration : ISV IDENT { printf("declaration -> ISV IDENT\n"); } | 
@@ -102,6 +102,11 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK N
 
 array_access : IDENT LBRACK expression RBRACK { printf("array_access -> IDENT LBRACK NUMBER RBRACK\n"); };
 
+assignment : IDENT LESSTHAN expression 				{ printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } |
+			 IDENT LESSTHAN function_call 			{ printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } | 
+			 array_access LESSTHAN expression 		{ printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
+			 array_access LESSTHAN function_call 	{ printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
+
 %%
 
 void main(int argc, char** argv) {
@@ -119,6 +124,6 @@ void main(int argc, char** argv) {
 void
 yyerror(char const *s)
 {
-	fprintf(stderr, "%s\n", s);
+	fprintf(stderr, "%s on line %d\n", s, yylineno);
 }
 
