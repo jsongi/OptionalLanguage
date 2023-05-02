@@ -1,0 +1,20 @@
+~ Example 1: ~
+main: () {
+    # a;
+    a < 1 + 2 * 3; 
+    ~ Syntax error at line 4: "<-" expected ~
+}
+
+~ Example 2: ~
+main: () {
+    a;
+    a <- 1 + 2 * 3;
+    ~ Syntax error at line 10: invalid declaration ~
+}
+
+~ Example 3: ~
+main: () {
+    # a;
+    a <- 1 + 2 * 3
+    ~ Syntax error at line 18: ";" expected ~
+}
