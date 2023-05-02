@@ -60,7 +60,7 @@ _({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" c
 
 " " { columnNum++; }
 [\t] { columnNum++; }
-[\n] { columnNum = 1; }
+[\n]|[\r\n] { columnNum = 1; }
 
 . { printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", yylineno, columnNum, yytext); columnNum++; }
 
