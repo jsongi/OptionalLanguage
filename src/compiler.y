@@ -64,9 +64,7 @@ whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE { printf("whils
 
 ext : EXIT ENDLINE { printf("exit -> EXIT ENDLINE\n"); };
 
-assignment : IDENT ASSIGN NUMBER { printf("assignment -> IDENT ASSIGN NUMBER\n"); } | 
-			 IDENT ASSIGN expression { printf("assignment -> IDENT ASSIGN expression\n"); } | 
-			 array ASSIGN NUMBER { printf("assignment -> array ASSIGN NUMBER\n"); } | 
+assignment : IDENT ASSIGN expression { printf("assignment -> IDENT ASSIGN expression\n"); } |
 			 array ASSIGN expression { printf("assignment -> array ASSIGN expression\n"); } | 
 			 IDENT ASSIGN function_call { printf("assignment -> IDENT ASSIGN function_call\n"); } | 
 			 array ASSIGN function_call { printf("assignment -> array ASSIGN function_call\n"); };
@@ -86,7 +84,7 @@ mulop : MULTIPLY { printf("mulop -> MULTIPLY\n"); } |
 
 factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n"); } | 
 		 NUMBER { printf("factor -> NUMBER\n"); } | 
-		 IDENT LBRACK NUMBER RBRACK { printf("factor -> IDENT LBRACK NUMBER RBRACK\n"); } | 
+		 IDENT LBRACK expression RBRACK { printf("factor -> IDENT LBRACK NUMBER RBRACK\n"); } | 
 		 IDENT { printf("factor -> IDENT\n"); };
 
 relational : relational_args relational_symbol relational_args { printf("relational -> relational_args relational_symbol relational_args\n"); };
@@ -101,7 +99,7 @@ relational_symbol : LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } |
 					GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
 
 array : ISV LBRACK NUMBER RBRACK IDENT { printf("array -> ISV LBRACK NUMBER RBRACK IDENT ENDLINE\n"); } | 
-		IDENT LBRACK NUMBER RBRACK { printf("array -> IDENT LBRACK NUMBER RBRACK\n"); };
+		IDENT LBRACK expression RBRACK { printf("array -> IDENT LBRACK NUMBER RBRACK\n"); };
 
 %%
 
