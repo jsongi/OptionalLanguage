@@ -11,7 +11,7 @@ ALPHA [a-zA-Z]
 
 %%
 
-"#" { printf("ISV\n"); columnNum++; }
+"#" { columnNum++; }
 
 get { columnNum += 3; return READ; }
 give { columnNum += 4; return WRITE; }
@@ -51,7 +51,7 @@ return { columnNum += 6; return RETURN; }
 ":" { columnNum++; return FUNCTION; }
 
 {ALPHA}+({ALPHA}|{DIGIT}|_)* { columnNum += strlen(yytext); return IDENT; }
-{DIGIT}+ { printf("NUMBER %s\n", yytext); columnNum += strlen(yytext); return NUMBER; }
+{DIGIT}+ { columnNum += strlen(yytext); return NUMBER; }
 
 {DIGIT}({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with a digit\n", yylineno, columnNum, yytext); columnNum += strlen(yytext); }
 _({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with an underscore\n", yylineno, columnNum, yytext); columnNum += strlen(yytext); }
