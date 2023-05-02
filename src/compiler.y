@@ -42,13 +42,13 @@ statement : declaration ENDLINE { printf("statement -> declaration\n"); } |
 			whilst { printf("statement -> whilst\n"); } | 
 			ext { printf("statement -> ext\n"); } | 
 			assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | 
-			expression ENDLINE { printf("statement -> expression ENDLINE\n"); } | 
 			array_init ENDLINE { printf("statement -> array_init"); };
 
 declaration : ISV IDENT { printf("declaration -> ISV IDENT\n"); } | 
-			  ISV IDENT COMMA declaration_cont { printf("declaration -> ISV IDENT COMMA declaration_cont\n"); };
+			  ISV IDENT COMMA declaration_cont { printf("declaration -> ISV IDENT COMMA declaration_cont\n"); } | 
+			  declaration_err;
 
-declaration_cont : IDENT ENDLINE { printf("declaration_cont -> IDENT ENDLINE\n"); } |
+declaration_cont : IDENT { printf("declaration_cont -> IDENT ENDLINE\n"); } |
 				   IDENT COMMA declaration_cont { printf("declaration_cont -> IDENT COMMA declaration_cont\n"); };
 
 function_call : IDENT LPAREN args RPAREN { printf("function_call -> IDENT LPAREN arguments RPAREN ENDLINE\n"); };
@@ -108,6 +108,8 @@ assignment_err : IDENT LESSTHAN expression 			 { printf("Syntax error: invalid i
 			 	 array_access LESSTHAN expression 	 { printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
 			 	 array_access LESSTHAN function_call { printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
 
+declaration_err : IDENT 					   { printf("Syntax error, invalid declaration: need type for declaration at line %d\n", yylineno); } | 
+			  	  IDENT COMMA declaration_cont { printf("Syntax error, invalid declaration: need type for declaration at line %d\n", yylineno); }
 %%
 
 void main(int argc, char** argv) {
