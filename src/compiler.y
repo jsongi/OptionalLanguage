@@ -5,7 +5,7 @@ void yyerror(char const *msg);
 %}
 
 
-%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNCTION NUMBER COLON OTHERWISE 
+%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNCTION NUMBER FUNCTION OTHERWISE 
 %start prog_start
 
 %%
@@ -14,7 +14,7 @@ prog_start : %empty { printf("prog_start -> epsilon\n"); } | functions { printf(
 
 functions : function { printf("functions -> function\n"); } | function functions { printf("functions -> function functions\n"); };
 
-function : IDENT COLON LPAREN args RPAREN LBRACK statements RETURN return_args RBRACK { printf("function -> IDENT LPAREN arguments RPAREN LBRACK statements RETURN RBRACK\n"); };
+function : IDENT FUNCTION LPAREN args RPAREN LBRACK statements RETURN return_args RBRACK { printf("function -> IDENT LPAREN arguments RPAREN LBRACK statements RETURN RBRACK\n"); };
 
 return_args : %empty { printf("return_args -> epsilon\n"); } | argument { printf("return_args -> argument\n"); };
 
