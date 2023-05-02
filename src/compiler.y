@@ -67,7 +67,8 @@ ext : EXIT ENDLINE { printf("exit -> EXIT ENDLINE\n"); };
 assignment : IDENT ASSIGN expression { printf("assignment -> IDENT ASSIGN expression\n"); } |
 			 array_access ASSIGN expression { printf("assignment -> array_access ASSIGN expression\n"); } | 
 			 IDENT ASSIGN function_call { printf("assignment -> IDENT ASSIGN function_call\n"); } | 
-			 array_access ASSIGN function_call { printf("assignment -> array_access ASSIGN function_call\n"); };
+			 array_access ASSIGN function_call { printf("assignment -> array_access ASSIGN function_call\n"); } |
+			 assignment_err;
 
 expression : expression addop term { printf("expression -> expression addop term\n"); } | 
 			 term { printf("expression -> term\n"); };
@@ -102,10 +103,10 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK N
 
 array_access : IDENT LBRACK expression RBRACK { printf("array_access -> IDENT LBRACK NUMBER RBRACK\n"); };
 
-assignment : IDENT LESSTHAN expression 				{ printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } |
-			 IDENT LESSTHAN function_call 			{ printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } | 
-			 array_access LESSTHAN expression 		{ printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
-			 array_access LESSTHAN function_call 	{ printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
+assignment_err : IDENT LESSTHAN expression 			 { printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } |
+			 	 IDENT LESSTHAN function_call 		 { printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } | 
+			 	 array_access LESSTHAN expression 	 { printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
+			 	 array_access LESSTHAN function_call { printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
 
 %%
 
