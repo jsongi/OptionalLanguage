@@ -43,7 +43,7 @@ statement : declaration ENDLINE { printf("statement -> declaration\n"); } |
 			assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | 
 			expression ENDLINE { printf("statement -> expression ENDLINE\n"); } | 
 			relational { printf("statement -> relational\n"); } | 
-			array ENDLINE { printf("statement -> array\n"); };
+			array_init ENDLINE { printf("statement -> array_init"); };
 
 declaration : ISV IDENT { printf("declaration -> ISV IDENT\n"); } | 
 			  ISV IDENT COMMA declaration_cont { printf("declaration -> ISV IDENT COMMA declaration_cont\n"); };
@@ -53,9 +53,9 @@ declaration_cont : IDENT ENDLINE { printf("declaration_cont -> IDENT ENDLINE\n")
 
 function_call : IDENT LPAREN args RPAREN { printf("function_call -> IDENT LPAREN arguments RPAREN ENDLINE\n"); };
 
-get : READ IDENT ENDLINE { printf("get -> READ IDENT ENDLINE\n"); } | READ array ENDLINE { printf("get -> READ array ENDLINE\n"); }; 
+get : READ IDENT ENDLINE { printf("get -> READ IDENT ENDLINE\n"); } | READ array_access ENDLINE { printf("get -> READ array_access ENDLINE\n"); }; 
 
-give : WRITE IDENT ENDLINE { printf("give -> WRITE IDENT ENDLINE\n"); } | WRITE array ENDLINE { printf("get -> WRITE array ENDLINE\n"); };
+give : WRITE IDENT ENDLINE { printf("give -> WRITE IDENT ENDLINE\n"); } | WRITE array_access ENDLINE { printf("get -> WRITE array_access ENDLINE\n"); };
 
 ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN relational RPAREN LBRACE statements RBRACE\n"); } | 
 			  IF LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN\n"); };
@@ -65,9 +65,9 @@ whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE { printf("whils
 ext : EXIT ENDLINE { printf("exit -> EXIT ENDLINE\n"); };
 
 assignment : IDENT ASSIGN expression { printf("assignment -> IDENT ASSIGN expression\n"); } |
-			 array ASSIGN expression { printf("assignment -> array ASSIGN expression\n"); } | 
+			 array_access ASSIGN expression { printf("assignment -> array_access ASSIGN expression\n"); } | 
 			 IDENT ASSIGN function_call { printf("assignment -> IDENT ASSIGN function_call\n"); } | 
-			 array ASSIGN function_call { printf("assignment -> array ASSIGN function_call\n"); };
+			 array_access ASSIGN function_call { printf("assignment -> array_access ASSIGN function_call\n"); };
 
 expression : expression addop term { printf("expression -> expression addop term\n"); } | 
 			 term { printf("expression -> term\n"); };
@@ -98,8 +98,9 @@ relational_symbol : LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } |
 					LESSOREQUAL { printf("relation_symbol -> LESSOREQUAL\n"); } | 
 					GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
 
-array : ISV LBRACK NUMBER RBRACK IDENT { printf("array -> ISV LBRACK NUMBER RBRACK IDENT ENDLINE\n"); } | 
-		IDENT LBRACK expression RBRACK { printf("array -> IDENT LBRACK NUMBER RBRACK\n"); };
+array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK NUMBER RBRACK IDENT ENDLINE\n"); };
+
+array_access : IDENT LBRACK expression RBRACK { printf("array_access -> IDENT LBRACK NUMBER RBRACK\n"); };
 
 %%
 
