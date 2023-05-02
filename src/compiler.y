@@ -24,7 +24,7 @@ arguments : argument { printf("arguments -> argument\n"); } | argument COMMA arg
 
 argument : IDENT { printf("argument -> IDENT\n"); } | expression { printf("argument -> expression\n"); };
 
-statements : %empty { printf("statements -> epsilon\n"); } | statement { printf("statements -> statement\n"); } | statement statements { printf("statements -> statement statements"); };
+statements : %empty { printf("statements -> epsilon\n"); } | statement statements { printf("statements -> statement statements"); };
 
 statement : declaration { printf("statement -> declaration\n"); } | function_call { printf("statement -> function_call\n"); } | get { printf("statement -> get\n"); } | give { printf("statement -> give\n"); } | ifotherwise { printf("statement -> ifotherwise\n"); } | whilst { printf("statement -> whilst\n"); } | ext { printf("statement -> ext\n"); } | assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | expression ENDLINE { printf("statement -> expression ENDLINE\n"); } | relational { printf("statement -> relational\n"); } | array ENDLINE { printf("statement -> array\n"); };
 
@@ -58,7 +58,7 @@ factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n
 
 relational : relational_args relational_symbol relational_args { printf("relational -> relational_args relational_symbol relational_args\n"); };
 
-relational_args : IDENT { printf("relational_args -> IDENT\n"); } | NUMBER { printf("relational_args -> NUMBER\n"); } | expression { printf("relational_args -> expression\n"); };
+relational_args : IDENT { printf("relational_args -> IDENT\n"); } | expression { printf("relational_args -> expression\n"); };
 
 relational_symbol : MODULO { printf("relational_symbol -> MODULO\n"); } | LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } | EQUAL { printf("relational_symbol -> EQUAL\n"); }| GREATERTHAN { printf("relational_symbol -> GREATERTHAN\n"); } | NOTEQUAL { printf("relational_symbol -> NOTEQUAL\n"); } | LESSOREQUAL { printf("relation_symbol -> LESSOREQUAL"); } | GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
 
