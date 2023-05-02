@@ -48,7 +48,7 @@ return { columnNum += 6; return RETURN; }
 
 "," { columnNum++; return COMMA; }
 ";" { columnNum++; return ENDLINE; }
-":" { columnNum++; return FUNCTION; }
+":" { columnNum++; return FUNC; }
 
 {ALPHA}+({ALPHA}|{DIGIT}|_)* { columnNum += strlen(yytext); return IDENT; }
 {DIGIT}+ { columnNum += strlen(yytext); return NUMBER; }

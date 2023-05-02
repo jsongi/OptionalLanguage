@@ -62,5 +62,5 @@ A single space character is considered white space, and the language ignores it.
 |<=|LESSOREQUAL|
 |>=|GREATEROREQUAL|
 |~|COMMENT|
-|:|FUNCTION|
+|:|FUNC|
 |return|RETURN|
