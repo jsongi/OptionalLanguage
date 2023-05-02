@@ -24,7 +24,7 @@ arguments : argument { printf("arguments -> argument\n"); } | argument COMMA arg
 
 argument : IDENT { printf("argument -> IDENT\n"); } | expression { printf("argument -> expression\n"); };
 
-statements : %empty { printf("statements -> epsilon\n"); } | statement statements { printf("statements -> statement statements"); };
+statements : %empty { printf("statements -> epsilon\n"); } | statement statements { printf("statements -> statement statements\n"); };
 
 statement : declaration ENDLINE { printf("statement -> declaration\n"); } | function_call { printf("statement -> function_call\n"); } | get { printf("statement -> get\n"); } | give { printf("statement -> give\n"); } | ifotherwise { printf("statement -> ifotherwise\n"); } | whilst { printf("statement -> whilst\n"); } | ext { printf("statement -> ext\n"); } | assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | expression ENDLINE { printf("statement -> expression ENDLINE\n"); } | relational { printf("statement -> relational\n"); } | array ENDLINE { printf("statement -> array\n"); };
 
@@ -38,9 +38,9 @@ get : READ IDENT ENDLINE { printf("get -> READ IDENT ENDLINE\n"); };
 
 give : WRITE IDENT ENDLINE { printf("give -> WRITE IDENT ENDLINE\n"); };
 
-ifotherwise : IF LPAREN relational RPAREN LBRACK statements RBRACK { printf("ifotherwise -> IF LPAREN relational RPAREN LBRACK statements RBRACK\n"); } | IF LPAREN relational RPAREN LBRACK statements RBRACK OTHERWISE LBRACK statements RBRACK { printf("ifotherwise -> IF LPAREN\n"); };
+ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN relational RPAREN LBRACK statements RBRACK\n"); } | IF LPAREN relational RPAREN LBRACE statements RBRACE OTHERWISE LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN\n"); };
 
-whilst : WHILE LPAREN relational LPAREN LBRACK statements RBRACK { printf("whilst -> WHILE LPAREN relational LPAREN LBRACK statements RBRACK\n"); };
+whilst : WHILE LPAREN relational LPAREN LBRACE statements RBRACE { printf("whilst -> WHILE LPAREN relational LPAREN LBRACK statements RBRACK\n"); };
 
 ext : EXIT ENDLINE { printf("exit -> EXIT ENDLINE\n"); };
 
@@ -54,15 +54,15 @@ term : term mulop factor { printf("term -> term mulop factor\n"); } | factor { p
 
 mulop : MULTIPLY { printf("mulop -> MULTIPLY\n"); }| DIVIDE { printf("mulop -> DIVIDE\n"); };
 
-factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n"); } | NUMBER { printf("factor -> NUMBER\n"); } | IDENT LBRACE NUMBER RBRACE { printf("factor -> IDENT LBRACE NUMBER RBRACE\n"); };
+factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n"); } | NUMBER { printf("factor -> NUMBER\n"); } | IDENT LBRACK NUMBER RBRACK { printf("factor -> IDENT LBRACE NUMBER RBRACE\n"); };
 
 relational : relational_args relational_symbol relational_args { printf("relational -> relational_args relational_symbol relational_args\n"); };
 
 relational_args : IDENT { printf("relational_args -> IDENT\n"); } | expression { printf("relational_args -> expression\n"); };
 
-relational_symbol : MODULO { printf("relational_symbol -> MODULO\n"); } | LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } | EQUAL { printf("relational_symbol -> EQUAL\n"); }| GREATERTHAN { printf("relational_symbol -> GREATERTHAN\n"); } | NOTEQUAL { printf("relational_symbol -> NOTEQUAL\n"); } | LESSOREQUAL { printf("relation_symbol -> LESSOREQUAL"); } | GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
+relational_symbol : MODULO { printf("relational_symbol -> MODULO\n"); } | LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } | EQUAL { printf("relational_symbol -> EQUAL\n"); }| GREATERTHAN { printf("relational_symbol -> GREATERTHAN\n"); } | NOTEQUAL { printf("relational_symbol -> NOTEQUAL\n"); } | LESSOREQUAL { printf("relation_symbol -> LESSOREQUAL\n"); } | GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
 
-array : ISV LBRACE NUMBER RBRACE IDENT { printf("array -> ISV LBRACE NUMBER RBRACE IDENT ENDLINE\n"); } | IDENT LBRACE NUMBER RBRACE { printf("array -> IDENT LBRACE NUMBER RBRACE\n"); };
+array : ISV LBRACK NUMBER RBRACK IDENT { printf("array -> ISV LBRACE NUMBER RBRACE IDENT ENDLINE\n"); } | IDENT LBRACK NUMBER RBRACK { printf("array -> IDENT LBRACE NUMBER RBRACE\n"); };
 
 %%
 
