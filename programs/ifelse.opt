@@ -6,7 +6,7 @@ main: () {
 ~ main program ~
 
   get b;
-  if b >= 50
+  if(b >= 50)
   {
     give b;
   }
