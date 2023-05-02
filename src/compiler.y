@@ -5,7 +5,7 @@ void yyerror(char const *msg);
 %}
 
 
-%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNCTION NUMBERS
+%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNCTION NUMBER COLON OTHERWISE 
 %start prog_start
 
 %%
@@ -20,7 +20,7 @@ return_args : %empty { printf("return_args -> epsilon\n"); } | argument { printf
 
 args : %empty { printf("args -> epsilon"); } | arguments { printf("args -> argument\n"); };
 
-arguments : argument { printf("arguments -> argument\n"); } | argument COMMA arguments { (printf("arguments -> argument COMMA arguments\n"); };
+arguments : argument { printf("arguments -> argument\n"); } | argument COMMA arguments { printf("arguments -> argument COMMA arguments\n"); };
 
 argument : IDENT { printf("argument -> IDENT\n"); } | expression { printf("argument -> expression\n"); };
 
@@ -54,7 +54,7 @@ term : term mulop factor { printf("term -> term mulop factor\n"); } | factor { p
 
 mulop : MULTIPLY { printf("mulop -> MULTIPLY\n"); }| DIVIDE { printf("mulop -> DIVIDE\n"); };
 
-factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n"); } | NUMBER { printf("factor -> NUMBER\n"); } | IDENT LBRACE NUMBER RBRACE { printf("factor -> IDENT LBRACE NUMBER RBRACE\n") };
+factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n"); } | NUMBER { printf("factor -> NUMBER\n"); } | IDENT LBRACE NUMBER RBRACE { printf("factor -> IDENT LBRACE NUMBER RBRACE\n"); };
 
 relational : relational_args relational_symbol relational_args { printf("relational -> relational_args relational_symbol relational_args\n"); };
 
