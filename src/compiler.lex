@@ -11,7 +11,7 @@ ALPHA [a-zA-Z]
 
 %%
 
-"#" { columnNum++; }
+"#" { columnNum++; return ISV; }
 
 get { columnNum += 3; return READ; }
 give { columnNum += 4; return WRITE; }
