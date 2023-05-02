@@ -6,7 +6,7 @@ int yylex();
 %}
 
 
-%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC NUMBER OTHERWISE 
+%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC NUMBER ELSE 
 %start prog_start
 
 %%
@@ -29,8 +29,7 @@ args : %empty { printf("args -> epsilon\n"); } |
 arguments : argument { printf("arguments -> argument\n"); } |
 			argument COMMA arguments { printf("arguments -> argument COMMA arguments\n"); };
 
-argument : IDENT { printf("argument -> IDENT\n"); } |
-		   expression { printf("argument -> expression\n"); };
+argument : expression { printf("argument -> expression\n"); };
 
 statements : %empty { printf("statements -> epsilon\n"); } |
 			 statement statements { printf("statements -> statement statements\n"); };
@@ -59,9 +58,9 @@ get : READ IDENT ENDLINE { printf("get -> READ IDENT ENDLINE\n"); };
 give : WRITE IDENT ENDLINE { printf("give -> WRITE IDENT ENDLINE\n"); };
 
 ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN relational RPAREN LBRACK statements RBRACK\n"); } | 
-			  IF LPAREN relational RPAREN LBRACE statements RBRACE OTHERWISE LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN\n"); };
+			  IF LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN\n"); };
 
-whilst : WHILE LPAREN relational LPAREN LBRACE statements RBRACE { printf("whilst -> WHILE LPAREN relational LPAREN LBRACK statements RBRACK\n"); };
+whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE { printf("whilst -> WHILE LPAREN relational LPAREN LBRACK statements RBRACK\n"); };
 
 ext : EXIT ENDLINE { printf("exit -> EXIT ENDLINE\n"); };
 
@@ -91,8 +90,7 @@ factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n
 
 relational : relational_args relational_symbol relational_args { printf("relational -> relational_args relational_symbol relational_args\n"); };
 
-relational_args : IDENT { printf("relational_args -> IDENT\n"); } | 
-				  expression { printf("relational_args -> expression\n"); };
+relational_args : expression { printf("relational_args -> expression\n"); };
 
 relational_symbol : MODULO { printf("relational_symbol -> MODULO\n"); } | 
 					LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } | 

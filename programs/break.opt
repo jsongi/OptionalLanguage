@@ -1,6 +1,6 @@
 
 ~ break.opt ~
-main(){
+main: () {
     # i;
     i <- 0;
     whilst(i <= 10){ ~This is a simple loop with an exit (break) statement~
