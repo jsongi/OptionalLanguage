@@ -103,13 +103,13 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK N
 
 array_access : IDENT LBRACK expression RBRACK { printf("array_access -> IDENT LBRACK NUMBER RBRACK\n"); };
 
-assignment_err : IDENT LESSTHAN expression 			 { printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } |
-			 	 IDENT LESSTHAN function_call 		 { printf("Syntax error: invalid identifer assignment at line %d: \"<-\" expected\n", yylineno); } | 
-			 	 array_access LESSTHAN expression 	 { printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
-			 	 array_access LESSTHAN function_call { printf("Syntax error: invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
+assignment_err : IDENT LESSTHAN expression 			 { printf("Syntax error, invalid assignment at line %d: \"<-\" expected\n", yylineno); } |
+			 	 IDENT LESSTHAN function_call 		 { printf("Syntax error, invalid assignment at line %d: \"<-\" expected\n", yylineno); } | 
+			 	 array_access LESSTHAN expression 	 { printf("Syntax error, invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
+			 	 array_access LESSTHAN function_call { printf("Syntax error, invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
 
-declaration_err : IDENT 					   { printf("Syntax error, invalid declaration: need type for declaration at line %d\n", yylineno); } | 
-			  	  IDENT COMMA declaration_cont { printf("Syntax error, invalid declaration: need type for declaration at line %d\n", yylineno); }
+declaration_err : IDENT 					   { printf("Syntax error at line %d, invalid declaration: need type for declaration\n", yylineno); } | 
+			  	  IDENT COMMA declaration_cont { printf("Syntax error at line %d, invalid declaration: need type for declaration\n", yylineno); }
 %%
 
 void main(int argc, char** argv) {
