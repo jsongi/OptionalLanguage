@@ -12,96 +12,224 @@ extern int yylineno;
 
 %%
 
-prog_start : %empty { printf("prog_start -> epsilon\n"); } |
-			 functions { printf("prog_start -> functions\n"); };
+prog_start : %empty { 
 
-functions : function { printf("functions -> function\n"); } |
-			function functions { printf("functions -> function functions\n"); };
+			 } |
+			 functions {
 
-function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE { printf("function -> IDENT LPAREN arguments RPAREN LBRACE statements RETURN RBRACE\n"); } | 
-		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE { printf("function -> IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE\n"); };
+			 };
 
-return_args : %empty { printf("return_args -> epsilon\n"); } |
-			  argument { printf("return_args -> argument\n"); };
+functions : function {
+	
+			} |
+			function functions {
+				
+			};
 
-args : %empty { printf("args -> epsilon\n"); } |
-	   arguments { printf("args -> argument\n"); };
+function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
 
-arguments : argument { printf("arguments -> argument\n"); } |
-			argument COMMA arguments { printf("arguments -> argument COMMA arguments\n"); };
+		   } | 
+		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE {
+			
+		   };
 
-argument : expression { printf("argument -> expression\n"); };
+return_args : %empty {
+			  		
+			  } |
+			  argument {
+				
+			  };
 
-statements : %empty { printf("statements -> epsilon\n"); } |
-			 statement statements { printf("statements -> statement statements\n"); };
+args : %empty {
+	   
+	   } |
+	   arguments {
+		
+	   };
 
-statement : declaration ENDLINE { printf("statement -> declaration\n"); } | 
-			function_call ENDLINE { printf("statement -> function_call\n"); } | 
-			get { printf("statement -> get\n"); } | give { printf("statement -> give\n"); } | 
-			ifotherwise { printf("statement -> ifotherwise\n"); } | 
-			whilst { printf("statement -> whilst\n"); } | 
-			ext { printf("statement -> ext\n"); } | 
-			assignment ENDLINE { printf("statement -> assignment ENDLINE\n"); } | 
-			array_init ENDLINE { printf("statement -> array_init\n"); };
+arguments : argument {
 
-declaration : ISV IDENT { printf("declaration -> ISV IDENT\n"); } | 
-			  ISV IDENT COMMA declaration_cont { printf("declaration -> ISV IDENT COMMA declaration_cont\n"); } | 
+            } |
+			argument COMMA arguments {
+				
+			};
+
+argument : expression {
+		   
+		   };
+
+statements : %empty {
+			 
+			 } |
+			 statement statements {
+				
+			 };
+
+statement : declaration ENDLINE {
+			
+			} | 
+			function_call ENDLINE {
+				
+			} | 
+			get {
+				
+			} | 
+			ifotherwise {
+				
+			} | 
+			whilst {
+				
+			} | 
+			ext {
+				
+			} | 
+			assignment ENDLINE {
+				
+			} | 
+			array_init ENDLINE {
+				
+			};
+
+declaration : ISV IDENT {
+			  
+			  } | 
+			  ISV IDENT COMMA declaration_cont {
+				
+			  } | 
 			  declaration_err;
 
-declaration_cont : IDENT { printf("declaration_cont -> IDENT ENDLINE\n"); } |
-				   IDENT COMMA declaration_cont { printf("declaration_cont -> IDENT COMMA declaration_cont\n"); };
+declaration_cont : IDENT {
+				   
+				   } |
+				   IDENT COMMA declaration_cont {
+					
+				   };
 
-function_call : IDENT LPAREN args RPAREN { printf("function_call -> IDENT LPAREN arguments RPAREN ENDLINE\n"); };
+function_call : IDENT LPAREN args RPAREN {
+				
+				};
 
-get : READ IDENT ENDLINE { printf("get -> READ IDENT ENDLINE\n"); } | READ array_access ENDLINE { printf("get -> READ array_access ENDLINE\n"); }; 
+get : READ IDENT ENDLINE {
+	  
+	  } | 
+	  READ array_access ENDLINE {
+		
+	  }; 
 
-give : WRITE IDENT ENDLINE { printf("give -> WRITE IDENT ENDLINE\n"); } | WRITE array_access ENDLINE { printf("get -> WRITE array_access ENDLINE\n"); };
+give : WRITE IDENT ENDLINE {
+	   
+	   } | 
+	   WRITE array_access ENDLINE {
+		
+	   };
 
-ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN relational RPAREN LBRACE statements RBRACE\n"); } | 
-			  IF LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE { printf("ifotherwise -> IF LPAREN\n"); };
+ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE {
+			  
+			  } | 
+			  IF LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
+				
+			  };
 
-whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE { printf("whilst -> WHILE LPAREN relational LPAREN LBRACE statements RBRACE\n"); };
+whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE {
+		 
+		 };
 
-ext : EXIT ENDLINE { printf("exit -> EXIT ENDLINE\n"); };
+ext : EXIT ENDLINE {
+	  
+	  };
 
-assignment : IDENT ASSIGN expression { printf("assignment -> IDENT ASSIGN expression\n"); } |
-			 array_access ASSIGN expression { printf("assignment -> array_access ASSIGN expression\n"); } | 
-			 IDENT ASSIGN function_call { printf("assignment -> IDENT ASSIGN function_call\n"); } | 
-			 array_access ASSIGN function_call { printf("assignment -> array_access ASSIGN function_call\n"); } |
+assignment : IDENT ASSIGN expression {
+			 
+			 } |
+			 array_access ASSIGN expression {
+				
+			 } | 
+			 IDENT ASSIGN function_call {
+				
+			 } | 
+			 array_access ASSIGN function_call {
+				
+			 } |
 			 assignment_err;
 
-expression : expression addop term { printf("expression -> expression addop term\n"); } | 
-			 term { printf("expression -> term\n"); };
+expression : expression addop term {
+			 
+			 } | 
+			 term {
+				
+			 };
 
-addop : ADD { printf("addop -> ADD\n"); } | 
-		SUBTRACT { printf("addop -> SUBTRACT\n"); };
+addop : ADD {
+		
+		} | 
+		SUBTRACT {
+			
+		};
 
-term : term mulop factor { printf("term -> term mulop factor\n"); } | 
-	   factor { printf("term -> factor\n"); };
+term : term mulop factor {
+	   
+	   } | 
+	   factor {
+		
+	   };
 
-mulop : MULTIPLY { printf("mulop -> MULTIPLY\n"); } | 
-		DIVIDE { printf("mulop -> DIVIDE\n"); } |
-		MODULO { printf("mulop -> MODULO\n"); };
+mulop : MULTIPLY {
+		
+		} | 
+		DIVIDE {
+			
+		} |
+		MODULO {
+			
+		};
 
-factor : LPAREN expression RPAREN { printf("factor -> LPAREN expression RPAREN\n"); } | 
-		 NUMBER { printf("factor -> NUMBER\n"); } | 
-		 IDENT LBRACK expression RBRACK { printf("factor -> IDENT LBRACK NUMBER RBRACK\n"); } | 
-		 IDENT { printf("factor -> IDENT\n"); };
+factor : LPAREN expression RPAREN {
+		 
+		 } | 
+		 NUMBER {
+			
+		 } | 
+		 IDENT LBRACK expression RBRACK {
+			
+		 } | 
+		 IDENT {
+			
+		 };
 
-relational : relational_args relational_symbol relational_args { printf("relational -> relational_args relational_symbol relational_args\n"); };
+relational : relational_args relational_symbol relational_args {
+			 
+			 };
 
-relational_args : expression { printf("relational_args -> expression\n"); };
+relational_args : expression {
+				  
+				  };
 
-relational_symbol : LESSTHAN { printf("relational_symbol -> LESSTHAN\n"); } | 
-					EQUAL { printf("relational_symbol -> EQUAL\n"); } | 
-					GREATERTHAN { printf("relational_symbol -> GREATERTHAN\n"); } | 
-					NOTEQUAL { printf("relational_symbol -> NOTEQUAL\n"); } | 
-					LESSOREQUAL { printf("relation_symbol -> LESSOREQUAL\n"); } | 
-					GREATEROREQUAL { printf("relational_symbol -> GREATEROREQUAL\n"); };
+relational_symbol : LESSTHAN {
+					
+					} | 
+					EQUAL {
+						
+					} | 
+					GREATERTHAN {
+						
+					} | 
+					NOTEQUAL {
+						
+					} | 
+					LESSOREQUAL {
+						
+					} | 
+					GREATEROREQUAL {
+						
+					};
 
-array_init : ISV LBRACK NUMBER RBRACK IDENT { printf("array_init -> ISV LBRACK NUMBER RBRACK IDENT\n"); };
+array_init : ISV LBRACK NUMBER RBRACK IDENT {
+			 
+			 };
 
-array_access : IDENT LBRACK expression RBRACK { printf("array_access -> IDENT LBRACK NUMBER RBRACK\n"); };
+array_access : IDENT LBRACK expression RBRACK {
+			  
+			  };
 
 assignment_err : IDENT LESSTHAN expression 			 { printf("Syntax error, invalid assignment at line %d: \"<-\" expected\n", yylineno); } |
 			 	 IDENT LESSTHAN function_call 		 { printf("Syntax error, invalid assignment at line %d: \"<-\" expected\n", yylineno); } | 
