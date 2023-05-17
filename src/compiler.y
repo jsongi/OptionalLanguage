@@ -1,11 +1,87 @@
 %{
-#include <stdio.h>
-extern FILE* yyin;
-void yyerror(char const *msg);
-int yylex();
-extern int yylineno;
-%}
 
+#include<stdio.h>
+#include<string>
+#include<vector>
+#include<string.h>
+#include<stdlib.h>
+
+extern int yylex(void);
+void yyerror(const char *msg);
+extern int currLine;
+
+char *identToken;
+int numberToken;
+int  count_names = 0;
+
+enum Type { Integer, Array };
+
+struct Symbol {
+  std::string name;
+  Type type;
+};
+
+struct Function {
+  std::string name;
+  std::vector<Symbol> declarations;
+};
+
+std::vector <Function> symbol_table;
+
+Function *get_function() {
+  int last = symbol_table.size()-1;
+  if (last < 0) {
+    printf("***Error. Attempt to call get_function with an empty symbol table\n");
+    printf("Create a 'Function' object using 'add_function_to_symbol_table' before\n");
+    printf("calling 'find' or 'add_variable_to_symbol_table'");
+    exit(1);
+  }
+  return &symbol_table[last];
+}
+
+bool find(std::string &value) {
+  Function *f = get_function();
+  for(int i=0; i < f->declarations.size(); i++) {
+    Symbol *s = &f->declarations[i];
+    if (s->name == value) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void add_function_to_symbol_table(std::string &value) {
+  Function f; 
+  f.name = value; 
+  symbol_table.push_back(f);
+}
+
+void add_variable_to_symbol_table(std::string &value, Type t) {
+  Symbol s;
+  s.name = value;
+  s.type = t;
+  Function *f = get_function();
+  f->declarations.push_back(s);
+}
+
+void print_symbol_table(void) {
+  printf("symbol table:\n");
+  printf("--------------------\n");
+  for(int i=0; i<symbol_table.size(); i++) {
+    printf("function: %s\n", symbol_table[i].name.c_str());
+    for(int j=0; j<symbol_table[i].declarations.size(); j++) {
+      printf("  locals: %s\n", symbol_table[i].declarations[j].name.c_str());
+    }
+  }
+  printf("--------------------\n");
+}
+
+struct CodeNode {
+    std::string code; // generated code as a string.
+    std::string name;
+};
+
+%}
 
 %token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC NUMBER
 %start prog_start
@@ -13,31 +89,52 @@ extern int yylineno;
 %%
 
 prog_start : %empty { 
-
+	CodeNode *node = new CodeNode;
+	$$ = node;
 			 } |
 			 functions {
-
+				CodeNode *node = $1;
+				std::string code = node->code;
+				printf("Generated code:\n");
+				printf("%s\n", code.c_str());
 			 };
 
 functions : function {
-	
+	CodeNode *func = $1;
+	std::string code = func->code;
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;
 			} |
 			function functions {
-				
+				CodeNode *func  = $1;
+				CodeNode *funcs = $2;
+				std::string code = func->code + funcs->code;
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 			};
 
 function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
-
+	CodeNode *func_name = $1;
+	CodeNode *args = $4;
+	CodeNode *statements = $7;
+	CodeNode *return_args = $9
+	std::string code = std::string("func ") + std::string("\n") + func_name->code + args->code + statements->code + return_args->code + std::string(endfunc\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;
 		   } | 
 		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE {
 			
 		   };
 
 return_args : %empty {
-			  		
+	CodeNode* node = new CodeNode;
+	$$ = node;		  		
 			  } |
 			  argument {
-				
+				$$ = $1;
 			  };
 
 args : %empty {
@@ -91,10 +188,22 @@ statement : declaration ENDLINE {
 			};
 
 declaration : ISV IDENT {
-			  
+		std::string value = $1;
+		Type t = Integer;
+		add_variable_to_symbol_table(value, t);
+
+		std::string code = std::string(". ") + value + std::string("\n");
+		CodeNode *node = new CodeNode;
+		node->code = code;
+		$$ = node;
 			  } | 
 			  ISV IDENT COMMA declaration_cont {
-				
+		CodeNode *decl = $1;
+		CodeNode *decls = $3;
+		std::string code = decl->code + decls->code;
+		CodeNode *node = new CodeNode;
+		node->code = code;
+		$$ = node;
 			  } | 
 			  declaration_err;
 
