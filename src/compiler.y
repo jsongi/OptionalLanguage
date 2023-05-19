@@ -83,8 +83,34 @@ struct CodeNode {
 
 %}
 
-%token ISV IDENT READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC NUMBER
+%union {
+    char *op_val;
+    struct CodeNode *node;
+}	
+
+%token ISV READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC
 %start prog_start
+%token <op_val> IDENT
+%token <op_val> NUMBER
+%type <node> functions
+%type <node> function
+%type <node> return_args
+%type <node> args
+%type <node> arguments
+%type <node> argument
+%type <node> statements
+%type <node> statement
+%type <node> declaration
+%type <node> declaration_cont
+%type <node> function_call
+%type <node> get
+%type <node> give
+%type <node> ifotherwise
+%type <node> whilst
+%type <node> ext
+%type <node> assignment
+%type <node> expression
+
 
 %%
 
@@ -119,8 +145,8 @@ function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args EN
 	CodeNode *func_name = $1;
 	CodeNode *args = $4;
 	CodeNode *statements = $7;
-	CodeNode *return_args = $9
-	std::string code = std::string("func ") + std::string("\n") + func_name->code + args->code + statements->code + return_args->code + std::string(endfunc\n");
+	CodeNode *return_args = $9;
+	std::string code = std::string("func ") + std::string("\n") + func_name->code + args->code + statements->code + return_args->code + std::string("endfunc\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;
