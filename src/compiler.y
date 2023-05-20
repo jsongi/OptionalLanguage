@@ -141,20 +141,24 @@ functions : function {
 			};
 
 function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
-	CodeNode *func_name = $1;
+	std::string func_name = $1;
 	CodeNode *params = $4;
 	CodeNode *body = $7;
 	CodeNode *returns = $9;
-	std::string code = std::string("func ") + func_name->code + std::string("\n") + params->code + body->code + returns->code + std::string("endfunc\n");
+	add_function_to_symbol_table(func_name);
+
+	std::string code = std::string("func ") + func_name + std::string("\n") + params->code + body->code + returns->code + std::string("endfunc\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;
 		   } | 
 		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE {
-			CodeNode *func_name = $1;
+			std::string *func_name = $1;
 			CodeNode *params = $4;
 			CodeNode *body = $7;
-			std::string code = std::string("func ") + func_name->code + std::string("\n") +	params->code + body->code + std::string("endfunc\n");
+			add_function_to_symbol_table(func_name); 
+
+			std::string code = std::string("func ") + func_name + std::string("\n") + params->code + body->code + std::string("endfunc\n");
 			CodeNode *node = new CodeNode;
 			node->code = code;
 			$$ = node;	
@@ -209,25 +213,25 @@ statement : declaration ENDLINE {
 	$$ = $1;		
 			} | 
 			function_call ENDLINE {
-				
+				$$ = $1;	
 			} | 
 			get {
-				
+				$$ = $1;
 			} | 
 			ifotherwise {
-				
+				$$ = $1;
 			} | 
 			whilst {
-				
+				$$ = $1;	
 			} | 
 			ext {
-				
+				$$ = $1;
 			} | 
 			assignment ENDLINE {
-				
+				$$ = $1;
 			} | 
 			array_init ENDLINE {
-				
+				$$ = $1;	
 			};
 
 declaration : ISV IDENT {
@@ -241,12 +245,15 @@ declaration : ISV IDENT {
 		$$ = node;
 			  } | 
 			  ISV IDENT COMMA declaration_cont {
-		CodeNode *decl = $1;
-		CodeNode *decls = $4;
-		std::string code = decl->code + decls->code;
-		CodeNode *node = new CodeNode;
-		node->code = code;
-		$$ = node;
+				std::string value = $2;
+				CodeNode* decls = $4;
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);
+			
+				std::string code = std::string(". ") + value + std::string("\n") + decls->code;
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 			  } | 
 			  declaration_err;
 
@@ -261,18 +268,42 @@ declaration_cont : IDENT {
 	$$ = node;			   
 				   } |
 				   IDENT COMMA declaration_cont {
-								
+					std::string value = $1;
+					CodeNode* decls = $4;
+					Type t = Integer;
+					add_variable_to_symbol_table(value, t);
+					
+					std::string code = std::string(". ") + value + std::string("\n") + decls->code;
+					CodeNode *node = new CodeNode;
+					node->code = code;
+					$$ = node;			
 				   };
 
 function_call : IDENT LPAREN args RPAREN {
-				
+	std::string func_name = $1;
+	CodeNode* params = $3;
+	add_function_to_symbol_table(func_name);
+	
+	std::string code = params->code + std::string("\n") + std::string("call ") + func_name + (", "); 
+	CodeNode *node = new CodeNode;
+	$$ = node;			
 				};
 
 get : READ IDENT ENDLINE {
-	  
+	std::string value = $2;
+	Type t = Integer;
+	add_variable_to_symbol_table(value, t);
+	
+	std::string code = std::string(".< ") + value + std::string("\n");
+	CodeNode *node = new CodeNode;
+	$$ = node;
 	  } | 
 	  READ array_access ENDLINE {
+		CodeNode *array = $2;
 		
+		std::string code = std::string(".<[] ") + array->code + std::string("\n");
+		CodeNode *node = new CodeNode;
+		$$ = node;
 	  }; 
 
 give : WRITE IDENT ENDLINE {
