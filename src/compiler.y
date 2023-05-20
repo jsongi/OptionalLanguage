@@ -111,7 +111,6 @@ struct CodeNode {
 %type <node> assignment
 %type <node> expression
 
-
 %%
 
 prog_start : %empty { 
@@ -143,53 +142,71 @@ functions : function {
 
 function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
 	CodeNode *func_name = $1;
-	CodeNode *args = $4;
-	CodeNode *statements = $7;
-	CodeNode *return_args = $9;
-	std::string code = std::string("func ") + std::string("\n") + func_name->code + args->code + statements->code + return_args->code + std::string("endfunc\n");
+	CodeNode *params = $4;
+	CodeNode *body = $7;
+	CodeNode *returns = $9;
+	std::string code = std::string("func ") + func_name->code + std::string("\n") + params->code + body->code + returns->code + std::string("endfunc\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;
 		   } | 
 		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE {
-			
+			CodeNode *func_name = $1;
+			CodeNode *params = $4;
+			CodeNode *body = $7;
+			std::string code = std::string("func ") + func_name->code + std::string("\n") +	params->code + body->code + std::string("endfunc\n");
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;	
 		   };
 
 return_args : %empty {
 	CodeNode* node = new CodeNode;
 	$$ = node;		  		
-			  } |
-			  argument {
-				$$ = $1;
-			  };
+	  	} |
+	  	argument {
+			$$ = $1;
+	  	};
 
 args : %empty {
-	   
-	   } |
-	   arguments {
-		
-	   };
+	CodeNode* node = new CodeNode;
+	$$ = node;	   
+	   	} |
+	   	arguments {
+			$$ = $1; 
+	   	};
 
 arguments : argument {
-
-            } |
-			argument COMMA arguments {
-				
-			};
+	$$ = $1;
+            	} |
+	    	argument COMMA arguments {
+			CodeNode *param = $1;
+			CodeNode *params = $3;
+			std::string code = param->code + params->code;
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;		
+	    	};
 
 argument : expression {
-		   
+	$$ = $1;	   
 		   };
 
 statements : %empty {
-			 
+	CodeNode* node = new CodeNode;
+	$$ = node;		 
 			 } |
 			 statement statements {
-				
+				CodeNode *stmt = $1;
+				CodeNode* stmts = $2;
+				std::string code = stmt->code + stmts->code;
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;							
 			 };
 
 statement : declaration ENDLINE {
-			
+	$$ = $1;		
 			} | 
 			function_call ENDLINE {
 				
@@ -214,7 +231,7 @@ statement : declaration ENDLINE {
 			};
 
 declaration : ISV IDENT {
-		std::string value = $1;
+		std::string value = $2;
 		Type t = Integer;
 		add_variable_to_symbol_table(value, t);
 
@@ -225,7 +242,7 @@ declaration : ISV IDENT {
 			  } | 
 			  ISV IDENT COMMA declaration_cont {
 		CodeNode *decl = $1;
-		CodeNode *decls = $3;
+		CodeNode *decls = $4;
 		std::string code = decl->code + decls->code;
 		CodeNode *node = new CodeNode;
 		node->code = code;
@@ -234,10 +251,17 @@ declaration : ISV IDENT {
 			  declaration_err;
 
 declaration_cont : IDENT {
-				   
+	std::string value = $1;
+	Type t = Integer;
+	add_variable_to_symbol_table(value, t);
+	
+	std::string code = std::string(". ") + value + std::string("\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;			   
 				   } |
 				   IDENT COMMA declaration_cont {
-					
+								
 				   };
 
 function_call : IDENT LPAREN args RPAREN {
@@ -336,7 +360,7 @@ relational : relational_args relational_symbol relational_args {
 			 };
 
 relational_args : expression {
-				  
+	$$ = $1;			  
 				  };
 
 relational_symbol : LESSTHAN {
