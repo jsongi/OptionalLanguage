@@ -110,12 +110,18 @@ struct CodeNode {
 %type <node> ext
 %type <node> assignment
 %type <node> expression
+%type <node> array_access
+%type <node> array_init
+%type <node> term
+%type <node> addop
+%type <node> mulop
+%type <node> factor
+%type <node> relational_args
 
 %%
 
 prog_start : %empty { 
-	CodeNode *node = new CodeNode;
-	$$ = node;
+	//Empty
 			 } |
 			 functions {
 				CodeNode *node = $1;
@@ -153,7 +159,7 @@ function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args EN
 	$$ = node;
 		   } | 
 		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE {
-			std::string *func_name = $1;
+			std::string func_name = $1;
 			CodeNode *params = $4;
 			CodeNode *body = $7;
 			add_function_to_symbol_table(func_name); 
@@ -269,7 +275,7 @@ declaration_cont : IDENT {
 				   } |
 				   IDENT COMMA declaration_cont {
 					std::string value = $1;
-					CodeNode* decls = $4;
+					CodeNode* decls = $3;
 					Type t = Integer;
 					add_variable_to_symbol_table(value, t);
 					
@@ -355,10 +361,10 @@ assignment : IDENT ASSIGN expression {
 	$$ = node; 
 			 } |
 			 array_access ASSIGN expression {
-				std::string value = $1;
+				CodeNode *arr = $1;
 				CodeNode *expr = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);	
+				//Type t = Integer;
+				//add_variable_to_symbol_table(value, t);	
 
 				std::string code = std::string(""); //needs handling for index positions	
 			 } | 
