@@ -186,10 +186,10 @@ arguments : argument {
 	    	argument COMMA arguments {
 			CodeNode *param = $1;
 			CodeNode *params = $3;
-			std::string code = param->code + params->code;
+			std::string code = param->code + std::string("\n") + params->code + std::string("\n");
 			CodeNode *node = new CodeNode;
 			node->code = code;
-			$$ = node;		
+			$$ = node;
 	    	};
 
 argument : expression {
@@ -286,6 +286,7 @@ function_call : IDENT LPAREN args RPAREN {
 	
 	std::string code = params->code + std::string("\n") + std::string("call ") + func_name + (", "); 
 	CodeNode *node = new CodeNode;
+	node->code = code;
 	$$ = node;			
 				};
 
@@ -296,21 +297,35 @@ get : READ IDENT ENDLINE {
 	
 	std::string code = std::string(".< ") + value + std::string("\n");
 	CodeNode *node = new CodeNode;
+	node->code = code;
 	$$ = node;
 	  } | 
 	  READ array_access ENDLINE {
 		CodeNode *array = $2;
 		
-		std::string code = std::string(".<[] ") + array->code + std::string("\n");
+		std::string code = std::string(".[]< ") + array->code + std::string("\n");
 		CodeNode *node = new CodeNode;
+		node->code = code;
 		$$ = node;
 	  }; 
 
 give : WRITE IDENT ENDLINE {
-	   
+	std::string value = $2;
+	Type t = Integer;
+	add_variable_to_symbol_table(value, t);
+	
+	std::string code = std::string(".> ") + value + std::string("\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;
 	   } | 
 	   WRITE array_access ENDLINE {
-		
+		CodeNode *array = $2;
+
+		std::string code = std::string(".[]> ") + array->code + std::string("\n");
+		CodeNode *node = new CodeNode;
+		node->code = code;
+		$$ = node;
 	   };
 
 ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE {
@@ -329,13 +344,32 @@ ext : EXIT ENDLINE {
 	  };
 
 assignment : IDENT ASSIGN expression {
-			 
+	std::string value = $1;
+	CodeNode *expr = $3;
+	Type t = Integer;
+	add_variable_to_symbol_table(value, t);
+	
+	std::string code = std::string("= ") + value + std::string(", ") + expr->code;		
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node; 
 			 } |
 			 array_access ASSIGN expression {
-				
+				std::string value = $1;
+				CodeNode *expr = $3;
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);	
+
+				std::string code = std::string(""); //needs handling for index positions	
 			 } | 
 			 IDENT ASSIGN function_call {
+				std::string value = $1;
 				
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);
+
+				CodeNode *node = new CodeNode;
+				$$ = node;
 			 } | 
 			 array_access ASSIGN function_call {
 				
@@ -343,38 +377,67 @@ assignment : IDENT ASSIGN expression {
 			 assignment_err;
 
 expression : expression addop term {
-			 
+	CodeNode *expr = $1;
+	CodeNode *op = $2;
+	CodeNode *trm = $3;
+	
+	std::string code = expr->code + op->code + trm->code + std::string("\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;		 
 			 } | 
 			 term {
-				
+			 	$$ = $1;		
 			 };
 
 addop : ADD {
-		
+	std::string code = std::string("+ ");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;	
 		} | 
 		SUBTRACT {
-			
+			std::string code = std::string("- ");
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;	
 		};
 
 term : term mulop factor {
-	   
+	CodeNode *trm = $1;
+	CodeNode *op = $2;
+	CodeNode *fac = $3;
+
+	std::string code = trm->code + op->code + fac->code + std::string("\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;
 	   } | 
 	   factor {
-		
+		$$ = $1;
 	   };
 
 mulop : MULTIPLY {
-		
+	std::string code = std::string("* ");
+	CodeNode *node = new CodeNode; 
+	node->code = code;
+	$$ = node;	
 		} | 
 		DIVIDE {
-			
+			std::string code = std::string("/ ");
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;	
 		} |
 		MODULO {
-			
+			std::string code = std::string("% ");
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;
 		};
 
 factor : LPAREN expression RPAREN {
-		 
+	$$ = $2;
 		 } | 
 		 NUMBER {
 			
@@ -383,7 +446,14 @@ factor : LPAREN expression RPAREN {
 			
 		 } | 
 		 IDENT {
+			std::string value = $1;
+			Type t = Integer;
+			add_variable_to_symbol_table(value, t);
 			
+			std::string code = value;
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;
 		 };
 
 relational : relational_args relational_symbol relational_args {
