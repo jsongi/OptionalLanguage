@@ -88,6 +88,7 @@ struct CodeNode {
     struct CodeNode *node;
 }	
 
+
 %token ISV READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC
 %start prog_start
 %token <op_val> IDENT
@@ -260,8 +261,7 @@ declaration : ISV IDENT {
 				CodeNode *node = new CodeNode;
 				node->code = code;
 				$$ = node;
-			  } | 
-			  declaration_err;
+			  }
 
 declaration_cont : IDENT {
 	std::string value = $1;
@@ -379,8 +379,7 @@ assignment : IDENT ASSIGN expression {
 			 } | 
 			 array_access ASSIGN function_call {
 				
-			 } |
-			 assignment_err;
+			 }
 
 expression : expression addop term {
 	CodeNode *expr = $1;
@@ -497,30 +496,18 @@ array_access : IDENT LBRACK expression RBRACK {
 			  
 			  };
 
-assignment_err : IDENT LESSTHAN expression 			 { printf("Syntax error, invalid assignment at line %d: \"<-\" expected\n", yylineno); } |
-			 	 IDENT LESSTHAN function_call 		 { printf("Syntax error, invalid assignment at line %d: \"<-\" expected\n", yylineno); } | 
-			 	 array_access LESSTHAN expression 	 { printf("Syntax error, invalid array index assignment at line %d: \"<-\" expected\n", yylineno); } | 
-			 	 array_access LESSTHAN function_call { printf("Syntax error, invalid array index assignment at line %d: \"<-\" expected\n", yylineno); };
-
-declaration_err : IDENT 					   { printf("Syntax error at line %d, invalid declaration: need type for declaration\n", yylineno); } | 
-			  	  IDENT COMMA declaration_cont { printf("Syntax error at line %d, invalid declaration: need type for declaration\n", yylineno); }
 %%
 
-void main(int argc, char** argv) {
-	if(argc >= 2) {
-		yyin = fopen(argv[1], "r");
-		if(yyin == NULL)
-			yyin = stdin;
-	}else{
-		yyin = stdin;
-	}
+int main(int argc, char** argv) {
 	yyparse();
+	return 0;
 }
 
 /* Called by yyparse on error. */
 void
 yyerror(char const *s)
 {
-	fprintf(stderr, "%s on line %d\n", s, yylineno);
+	printf("** Line %d: %s\n", currLine, s);
+	exit(1);
 }
 
