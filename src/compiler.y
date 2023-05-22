@@ -8,7 +8,7 @@
 
 extern int yylex(void);
 void yyerror(const char *msg);
-extern int currLine;
+extern int columnNum;
 
 char *identToken;
 int numberToken;
@@ -225,6 +225,9 @@ statement : declaration ENDLINE {
 			get {
 				$$ = $1;
 			} | 
+			give {
+				$$ = $1;
+			} |
 			ifotherwise {
 				$$ = $1;
 			} | 
@@ -507,7 +510,7 @@ int main(int argc, char** argv) {
 void
 yyerror(char const *s)
 {
-	printf("** Line %d: %s\n", currLine, s);
+	printf("** Line %d: %s\n", columnNum, s);
 	exit(1);
 }
 
