@@ -227,10 +227,10 @@ return_args : %empty {
 			CodeNode* stm1 = $1;
 			CodeNode* node = new CodeNode;
 			
-			if(!find(stm1->name)) {
-				std::string message = std::string("unidentified variable '") + stm1->name + std::string("'");
-				yyerror(message.c_str());
-			}
+			//if(!find(stm1->name)) {
+			//	std::string message = std::string("unidentified variable '") + stm1->name + std::string("'");
+			//	yyerror(message.c_str());
+			//}
 
 			node->code = "ret " + stm1->code;
 			$$ = node;
@@ -420,7 +420,7 @@ declaration_cont : IDENT {
 					$$ = node;			
 				   };
 
-function_call : function_ident LPAREN func_call_args RPAREN {
+function_call : IDENT LPAREN func_call_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
 	if(!findfunc(func_name)) {
