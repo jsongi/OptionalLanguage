@@ -40,6 +40,16 @@ bool has_main() {
 	return TF;
 }
 
+bool findfunc(std::string &func) {
+	bool found = false;
+	for(int i = 0; i < symbol_table.size(); i++) {
+		Function *f = &symbol_table[i];
+		if(f->name == func)
+			found = true;
+	}
+	return found;
+}
+
 std::string create_temp() {
 	static int num = 0;
 	std::ostringstream ss;
@@ -216,6 +226,12 @@ return_args : %empty {
 	  	argument {
 			CodeNode* stm1 = $1;
 			CodeNode* node = new CodeNode;
+			
+			if(!find(stm1->name)) {
+				std::string message = std::string("unidentified variable '") + stm1->name + std::string("'");
+				yyerror(message.c_str());
+			}
+
 			node->code = "ret " + stm1->code;
 			$$ = node;
 	  	};
@@ -288,6 +304,9 @@ argument : expression {
 	CodeNode *param = $1;
 	std::string code = param->code;
 	CodeNode *node = new CodeNode;
+	
+	Type t = Integer;
+
 	node->code = code;
 	node->name = code;
 	node->code += "\n";
@@ -404,7 +423,7 @@ declaration_cont : IDENT {
 function_call : function_ident LPAREN func_call_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
-	if(!find(func_name)) {
+	if(!findfunc(func_name)) {
 		std::string message = std::string("unidentified function '") + func_name + std::string("'");
 		yyerror(message.c_str());
 	}
