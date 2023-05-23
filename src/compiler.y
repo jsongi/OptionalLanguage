@@ -107,7 +107,7 @@ struct CodeNode {
 %type <node> functions
 %type <node> function
 %type <node> return_args
-%type <node> args
+%type <node> func_args
 %type <node> arguments
 %type <node> argument
 %type <node> statements
@@ -159,7 +159,7 @@ functions : function {
 				$$ = node;
 			};
 
-function : function_ident FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
+function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
 	std::string func_name = $1;
 	CodeNode *params = $4;
 	CodeNode *body = $7;
@@ -170,7 +170,7 @@ function : function_ident FUNC LPAREN args RPAREN LBRACE statements RETURN retur
 	node->code = code;
 	$$ = node;
 		   } | 
-		   function_ident FUNC LPAREN args RPAREN LBRACE statements RBRACE {
+		   function_ident FUNC LPAREN func_args RPAREN LBRACE statements RBRACE {
 			std::string func_name = $1;
 			CodeNode *params = $4;
 			CodeNode *body = $7;
@@ -196,15 +196,21 @@ return_args : %empty {
 	$$ = node;		  		
 	  	} |
 	  	argument {
-			$$ = $1;
+			CodeNode* stm1 = $1;
+			CodeNode* node = new CodeNode;
+			node->code = "ret " + stm1->code;
+			$$ = node;
 	  	};
 
-args : %empty {
+func_args : %empty {
 	CodeNode* node = new CodeNode;
 	$$ = node;	   
 	   	} |
 	   	arguments {
-			$$ = $1; 
+			CodeNode* stm1 = $1;
+			CodeNode* node = new CodeNode;
+			node->code = "param " + stm1->code;
+			$$ = node;
 	   	};
 
 arguments : argument {
@@ -221,7 +227,7 @@ arguments : argument {
 
 argument : expression {
 	CodeNode *param = $1;
-	std::string code = std::string("param ") + param->code + std::string("\n");
+	std::string code = param->code + std::string("\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;	   
@@ -312,7 +318,7 @@ declaration_cont : IDENT {
 					$$ = node;			
 				   };
 
-function_call : IDENT LPAREN args RPAREN {
+function_call : IDENT LPAREN func_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
 	add_function_to_symbol_table(func_name);
