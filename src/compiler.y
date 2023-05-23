@@ -70,6 +70,16 @@ Function *get_function() {
   return &symbol_table[last];
 }
 
+Type get_var_type(std::string &value) {
+	Function *f = get_function();
+	for(int i = 0; i < f->declarations.size(); i++) {
+		Symbol *s = &f->declarations[i];
+		if(s->name == value)
+			return s->type;
+	}
+	return Array;
+}
+	
 bool find(std::string &value) {
   Function *f = get_function();
   for(int i=0; i < f->declarations.size(); i++) {
@@ -494,6 +504,17 @@ ext : EXIT ENDLINE {
 assignment : IDENT ASSIGN expression {
 				std::string value = $1;
 				
+				if(!find(value)) {
+					std::string message = std::string("variable undeclared '") + value + std::string("'");
+					yyerror(message.c_str());
+				}
+				
+				if(get_var_type(value) == Array) {
+					std::string message = std::string("missing index for array");
+					yyerror(message.c_str());
+				}
+							
+
 				CodeNode *node = new CodeNode;
 				node->code = $3->code + "= " + value + ", " + $3->name + "\n";
 				$$ = node; 
@@ -501,6 +522,11 @@ assignment : IDENT ASSIGN expression {
 			 IDENT LBRACK expression RBRACK ASSIGN expression  {
 				CodeNode *node = new CodeNode;
 				std::string dst = $1;
+				
+				if(get_var_type(dst) == Integer) {
+					std::string message = std::string("invalid access of array as integer variable");
+					yyerror(message.c_str());
+				}
 
 				node->code = $6->code + "[]= " + dst + ", " + $3->name + ", " + $6->name + "\n";
 				$$ = node;
@@ -572,6 +598,11 @@ factor : LPAREN expression RPAREN {
 			std::string temp = create_temp();
 			node->name = temp;
 
+			if(get_var_type(value) == Integer) {
+				std::string message = std::string("invalid access of array for integer variable");
+				yyerror(message.c_str());
+			}
+
 			node->code = $3->code + ". " + temp + "\n";
 			node->code += "=[] " + temp + ", " + value + ", " + $3->name + "\n";
 			$$ = node;
@@ -579,6 +610,11 @@ factor : LPAREN expression RPAREN {
 		 IDENT {
 			std::string value = $1;
 			
+			if(get_var_type(value) == Array) {
+				std::string message = std::string("attempt to access array as regular integer variable");
+				yyerror(message.c_str());
+			}
+
 			CodeNode *node = new CodeNode;
 			node->code = "";
 			node->name = value;
