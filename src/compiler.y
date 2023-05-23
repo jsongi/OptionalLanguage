@@ -214,15 +214,15 @@ func_args : %empty {
 	   	};
 
 arguments : argument {
-	$$ = $1;
+				$$ = $1;
             	} |
 	    	argument COMMA arguments {
-			CodeNode *param = $1;
-			CodeNode *params = $3;
-			std::string code = param->code + params->code;
-			CodeNode *node = new CodeNode;
-			node->code = code;
-			$$ = node;
+				CodeNode *param = $1;
+				CodeNode *params = $3;
+				std::string code = param->code + "param " + params->code;
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 	    	};
 
 argument : expression {
