@@ -127,7 +127,7 @@ struct CodeNode {
 %type <op_val> function_ident
 %type <node> functions
 %type <node> function
-%type <node> return_args
+%type <node> return_arg
 %type <node> func_args
 %type <node> arguments
 %type <node> argument
@@ -187,30 +187,38 @@ functions : function {
 				$$ = node;
 			};
 
-function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
-	std::string func_name = $1;
-	CodeNode *params = $4;
-	CodeNode *body = $7;
-	CodeNode *returns = $9;
+function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RETURN return_arg ENDLINE RBRACE {
+				std::string func_name = $1;
+				CodeNode *params = $4;
+				CodeNode *body = $7;
+				CodeNode *returns = $9;
 
-	std::string code = std::string("func ") + func_name + std::string("\n") + params->code + body->code + returns->code + std::string("endfunc\n");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;
+				std::string code = std::string("func ") + func_name + std::string("\n");
+				code += params->code;
+				code += body->code;
+				if (func_name != "main")
+					code += returns->code;
+				
+				code += std::string("endfunc\n");
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 		   } | 
 		   function_ident FUNC LPAREN func_args RPAREN LBRACE statements RBRACE {
-			std::string func_name = $1;
-			CodeNode *params = $4;
-			CodeNode *body = $7;
+				std::string func_name = $1;
+				CodeNode *params = $4;
+				CodeNode *body = $7;
 
-			std::string code = std::string("func ") + func_name + std::string("\n");
-			code += params->code;
-			code += body->code;
-			code += std::string("endfunc\n");
-			
-			CodeNode *node = new CodeNode;
-			node->code = code;
-			$$ = node;
+				std::string code = std::string("func ") + func_name + std::string("\n");
+				code += params->code;
+				code += body->code;
+				if (func_name != "main")
+					code += "ret 0\n";
+				code += "endfunc\n";
+				
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 		   };
 
 function_ident : IDENT {
@@ -219,44 +227,44 @@ function_ident : IDENT {
 	$$ = $1;
 }
 
-return_args : %empty {
-	CodeNode* node = new CodeNode;
-	$$ = node;		  		
-	  	} |
-	  	argument {
-			CodeNode* stm1 = $1;
-			CodeNode* node = new CodeNode;
-			
-			if(!find(stm1->name)) {
-				std::string message = std::string("unidentified variable '") + stm1->name + std::string("'");
-				yyerror(message.c_str());
-			}
-
-			node->code = "ret " + stm1->code;
-			$$ = node;
-	  	};
+return_arg : %empty {
+				CodeNode* node = new CodeNode;
+				node->code = "ret 0\n";
+				$$ = node;		  		
+			 } |
+			 expression {
+				CodeNode* node = new CodeNode;
+				node->code = $1->code + "ret " + $1->name + "\n";
+				$$ = node;		  		
+			 };
 
 func_args : %empty {
-	CodeNode* node = new CodeNode;
-	$$ = node;	   
+			CodeNode* node = new CodeNode;
+			$$ = node;	   
 	   	} |
 	   	arguments {
-			CodeNode* stm1 = $1;
 			CodeNode* node = new CodeNode;
-			node->code = ". " + stm1->code;
+			node->code = ". " + $1->code;
+			std::istringstream ss(node->code);
+			std::string line;
+			int num = 0;
+			while (std::getline(ss, line)) {
+				node->code += "= " + line.substr(2, 3) + ", $" + std::to_string(num) + "\n";
+				++num;
+			}
 			$$ = node;
 	   	};
 
 func_call_args : %empty {
-	CodeNode *node = new CodeNode;
-	$$ = node;
-		} |
-		call_arguments {
-			CodeNode *stm1 = $1;
-			CodeNode *node = new CodeNode;
-			node->code = std::string("params ") + stm1->code;
-			$$ = node;
-		};
+					CodeNode *node = new CodeNode;
+					$$ = node;
+				 } |
+				 call_arguments {
+					CodeNode *stm1 = $1;
+					CodeNode *node = new CodeNode;
+					node->code = std::string("param ") + stm1->code;
+					$$ = node;
+				 };
 
 call_arguments : call_argument {
 				$$ = $1;
@@ -264,7 +272,7 @@ call_arguments : call_argument {
 		call_argument COMMA call_arguments {
 			CodeNode *param = $1;
 			CodeNode *params = $3;
-			std::string code = param->code + std::string("params ") + params->code;
+			std::string code = param->code + std::string("param ") + params->code;
 			CodeNode *node = new CodeNode;
 			node->code = code;
 			$$ = node;
@@ -280,36 +288,22 @@ call_argument : expression {
 
 arguments : argument {
 				$$ = $1;
-            	} |
+            } |
 	    	argument COMMA arguments {
-				//this is a horrible disgusting mess
-				CodeNode *param = $1;
-				CodeNode *params = $3;
-				std::string code = param->code + ". " + params->code;
-				std::ostringstream ss;
-				ss << param_num;
-				code += "= " + param->name + ", $" + ss.str() + "\n";
-				param_num += 1;
-				ss.str("");
-				ss.clear();
-				ss << param_num;
-				code += "= " + params->name + ", $" + ss.str() + "\n";
-				CodeNode *node = new CodeNode;
-				node->code = code;
-				param_num = 0;
+				CodeNode* node = new CodeNode;
+				node->code = $1->code + ". " + $3->code;
 				$$ = node;
 	    	};
 
 argument : expression {
 	CodeNode *param = $1;
-	std::string code = param->code;
+	std::string code = param->name + "\n";
 	CodeNode *node = new CodeNode;
 	
 	Type t = Integer;
 
 	node->code = code;
-	node->name = code;
-	node->code += "\n";
+	node->name = code + "\n";
 	$$ = node;	   
 		   };
 
@@ -421,16 +415,18 @@ declaration_cont : IDENT {
 				   };
 
 function_call : function_ident LPAREN func_call_args RPAREN {
-	std::string func_name = $1;
-	CodeNode* params = $3;
-	if(!findfunc(func_name)) {
-		std::string message = std::string("unidentified function '") + func_name + std::string("'");
-		yyerror(message.c_str());
-	}
-	std::string code = params->name + std::string("call ") + func_name + (", "); 
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;			
+					CodeNode *node = new CodeNode;
+					std::string func_name = $1;
+					if(!findfunc(func_name)) {
+						std::string message = std::string("unidentified function '") + func_name + std::string("'");
+						yyerror(message.c_str());
+					}
+
+					std::string temp = create_temp();
+					std::string code = $3->name + ". " + temp + "\n" + $3->code + "call " + func_name + ", " + temp + "\n"; 
+					node->name = temp;
+					node->code = code;
+					$$ = node;			
 				};
 
 get : READ IDENT ENDLINE {
@@ -577,18 +573,13 @@ factor : LPAREN expression RPAREN {
 			$$ = node;
 		 } |
 		 IDENT {
-			std::string value = $1;
-			
 			CodeNode *node = new CodeNode;
 			node->code = "";
-			node->name = value;
+			node->name = $1;
 			$$ = node;
 		 } |
 		 function_call {
-			CodeNode* node = new CodeNode;
-			std::string temp = create_temp();
-			node->name = ". " + temp + "\n" + $1->code + temp + "\n";
-			$$ = node;
+			$$ = $1;
 		 };
 
 relational : relational_args relational_symbol relational_args {
