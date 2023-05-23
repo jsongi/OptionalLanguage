@@ -30,6 +30,16 @@ struct Function {
 
 std::vector <Function> symbol_table;
 
+bool has_main() {
+	bool TF = false;
+	for(int i = 0; i < symbol_table.size(); i++) {
+		Function *f = &symbol_table[i];
+		if(f->name == "main")
+			TF = true;
+	}
+	return TF;
+}
+
 std::string create_temp() {
 	static int num = 0;
 	std::ostringstream ss;
@@ -144,6 +154,11 @@ prog_start : %empty {
 			 functions {
 				CodeNode *node = $1;
 				std::string code = node->code;
+		
+				if(!has_main()) {
+					std::string message = std::string("no main function found");
+					yyerror(message.c_str());
+				}
 				// printf("Generated code:\n");
 				printf("%s\n", code.c_str());
 			 };
