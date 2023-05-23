@@ -382,7 +382,7 @@ assignment : IDENT ASSIGN expression {
 	Type t = Integer;
 	add_variable_to_symbol_table(value, t);
 	
-	std::string code = std::string("= ") + value + std::string(", ") + expr->code;		
+	std::string code = std::string("= ") + value + std::string(", ") + expr->code + std::string("\n");		
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node; 
@@ -472,7 +472,10 @@ factor : LPAREN expression RPAREN {
 	$$ = $2;
 		 } | 
 		 NUMBER {
-			
+			CodeNode *node = new CodeNode;
+			std::string digit = $1;
+			node->code = digit;
+			$$ = node;
 		 } | 
 		 IDENT LBRACK expression RBRACK {
 			
