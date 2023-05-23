@@ -213,14 +213,18 @@ arguments : argument {
 	    	argument COMMA arguments {
 			CodeNode *param = $1;
 			CodeNode *params = $3;
-			std::string code = param->code + std::string("\n") + params->code + std::string("\n");
+			std::string code = param->code + params->code;
 			CodeNode *node = new CodeNode;
 			node->code = code;
 			$$ = node;
 	    	};
 
 argument : expression {
-	$$ = $1;	   
+	CodeNode *param = $1;
+	std::string code = std::string("param ") + param->code + std::string("\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;	   
 		   };
 
 statements : %empty {
