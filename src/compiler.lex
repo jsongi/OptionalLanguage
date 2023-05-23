@@ -1,8 +1,12 @@
+%option noyywrap
 %{
-#include "y.tab.h"
-#include <stdio.h>
+#include "compiler.tab.h"
+#include <string.h>
 
 int columnNum = 1;
+
+extern char *identToken;
+extern int numberToken;
 %}
 %option yylineno
 
@@ -50,8 +54,18 @@ return { columnNum += 6; return RETURN; }
 ";" { columnNum++; return ENDLINE; }
 ":" { columnNum++; return FUNC; }
 
-{ALPHA}+({ALPHA}|{DIGIT}|_)* { columnNum += strlen(yytext); return IDENT; }
-{DIGIT}+ { columnNum += strlen(yytext); return NUMBER; }
+{ALPHA}+({ALPHA}|{DIGIT}|_)* { columnNum += strlen(yytext); 
+	char * token = new char[yyleng];
+	strcpy(token, yytext);
+	yylval.op_val = token;
+	identToken = yytext;
+	return IDENT; }
+{DIGIT}+ { columnNum += strlen(yytext); 
+	char * token = new char[yyleng];
+	strcpy(token, yytext);
+	yylval.op_val = token;
+	numberToken = atoi(yytext);
+	return NUMBER; }
 
 {DIGIT}({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with a digit\n", yylineno, columnNum, yytext); columnNum += strlen(yytext); }
 _({DIGIT}|{ALPHA}|_)* { printf("Error at line %d, column %d: identifier \"%s\" cannot start with an underscore\n", yylineno, columnNum, yytext); columnNum += strlen(yytext); }

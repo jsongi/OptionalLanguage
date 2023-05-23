@@ -1,6 +1,9 @@
-all:
+all: practice
+compiler.tab.c compiler.tab.h:	compiler.y
+	bison -t -v -d compiler.y
+lex.yy.c: compiler.lex compiler.tab.h
 	flex compiler.lex
-	bison -v -d --file-prefix=y compiler.y
-	g++ -o parser lex.yy.c y.tab.c -lfl
+practice: lex.yy.c compiler.tab.c compiler.tab.h
+	g++ -o practice compiler.tab.c lex.yy.c -lfl
 clean:
-	rm -f parser lex.yy.c y.tab.c y.tab.h y.output
+	rm practice compiler.tab.c lex.yy.c compiler.tab.h compiler.output

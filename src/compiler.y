@@ -8,7 +8,7 @@
 
 extern int yylex(void);
 void yyerror(const char *msg);
-extern int columnNum;
+extern int yylineno;
 
 char *identToken;
 int numberToken;
@@ -88,9 +88,9 @@ struct CodeNode {
     struct CodeNode *node;
 }	
 
-
-%token ISV READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC
+%define parse.error verbose
 %start prog_start
+%token ISV READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC
 %token <op_val> IDENT
 %token <op_val> NUMBER
 %type <node> functions
@@ -122,7 +122,8 @@ struct CodeNode {
 %%
 
 prog_start : %empty { 
-	//Empty
+	//CodeNode *node = new CodeNode;
+	//$$ = node;
 			 } |
 			 functions {
 				CodeNode *node = $1;
@@ -165,10 +166,14 @@ function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args EN
 			CodeNode *body = $7;
 			add_function_to_symbol_table(func_name); 
 
-			std::string code = std::string("func ") + func_name + std::string("\n") + params->code + body->code + std::string("endfunc\n");
+			std::string code = std::string("func ") + func_name + std::string("\n");
+			code += params->code;
+			code += body->code;
+			code += std::string("endfunc\n");
+			
 			CodeNode *node = new CodeNode;
 			node->code = code;
-			$$ = node;	
+			$$ = node;
 		   };
 
 return_args : %empty {
@@ -204,8 +209,8 @@ argument : expression {
 		   };
 
 statements : %empty {
-	CodeNode* node = new CodeNode;
-	$$ = node;		 
+	CodeNode* node = new CodeNode;	
+	$$ = node;	 
 			 } |
 			 statement statements {
 				CodeNode *stmt = $1;
@@ -510,7 +515,7 @@ int main(int argc, char** argv) {
 void
 yyerror(char const *s)
 {
-	printf("** Line %d: %s\n", columnNum, s);
+	printf("** Line %d: %s\n", yylineno, s);
 	exit(1);
 }
 
