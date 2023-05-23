@@ -14,6 +14,7 @@ extern int yylineno;
 char *identToken;
 int numberToken;
 int  count_names = 0;
+int param_num = 0;
 
 enum Type { Integer, Array };
 
@@ -251,19 +252,31 @@ arguments : argument {
 				$$ = $1;
             	} |
 	    	argument COMMA arguments {
+				//this is a horrible disgusting mess
 				CodeNode *param = $1;
 				CodeNode *params = $3;
 				std::string code = param->code + ". " + params->code;
+				std::ostringstream ss;
+				ss << param_num;
+				code += "= " + param->name + ", $" + ss.str() + "\n";
+				param_num += 1;
+				ss.str("");
+				ss.clear();
+				ss << param_num;
+				code += "= " + params->name + ", $" + ss.str() + "\n";
 				CodeNode *node = new CodeNode;
 				node->code = code;
+				param_num = 0;
 				$$ = node;
 	    	};
 
 argument : expression {
 	CodeNode *param = $1;
-	std::string code = param->code + std::string("\n");
+	std::string code = param->code;
 	CodeNode *node = new CodeNode;
 	node->code = code;
+	node->name = code;
+	node->code += "\n";
 	$$ = node;	   
 		   };
 
@@ -532,6 +545,7 @@ factor : LPAREN expression RPAREN {
 			std::string code = value;
 			CodeNode *node = new CodeNode;
 			node->code = code;
+			node->name = code;
 			$$ = node;
 		 };
 
