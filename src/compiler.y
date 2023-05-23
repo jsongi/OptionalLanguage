@@ -379,7 +379,9 @@ whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE {
 		 };
 
 ext : EXIT ENDLINE {
-	  
+	  		CodeNode* node = new CodeNode;
+			node->code = "ret 0\n";
+			$$ = node;
 	  };
 
 assignment : IDENT ASSIGN expression {
