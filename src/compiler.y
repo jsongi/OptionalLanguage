@@ -410,30 +410,43 @@ function_call : function_ident LPAREN func_call_args RPAREN {
 				};
 
 get : READ IDENT ENDLINE {
-	std::string value = $2;
-	
-	if(!find(value)) {
-		std::string message = std::string("variable undeclared '") + value + std::string("'");
-		yyerror(message.c_str());
-	}
-	
-	std::string code = std::string(".< ") + value + std::string("\n");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;
+			std::string value = $2;
+			
+			if(!find(value)) {
+				std::string message = std::string("variable undeclared '") + value + std::string("'");
+				yyerror(message.c_str());
+			}
+			
+			std::string code = std::string(".< ") + value + std::string("\n");
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;
 	  } | 
 	  READ IDENT LBRACK expression RBRACK ENDLINE {
-		// CodeNode *array = $2;
-		
-		// std::string code = std::string(".[]< ") + array->code + std::string("\n");
-		// CodeNode *node = new CodeNode;
-		// node->code = code;
-		// $$ = node;
+			std::string dst = $2;
+			
+			if(!find(dst)) {
+				std::string message = std::string("variable undeclared '") + dst + std::string("'");
+				yyerror(message.c_str());
+			}
+			
+			std::string code = $4->code + ".[]< " + dst + ", " + $4->name + "\n";
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;
 	  }; 
 
 give : WRITE expression ENDLINE {
-			CodeNode *node = new CodeNode;
-			node->code = $2->code + ".> " + $2->name + "\n";
+			CodeNode* node = new CodeNode;
+			if (isdigit($2->name[0])) {
+				std::string temp = create_temp();
+				node->code = $2->code + ". " + temp + "\n";
+				node->code += "= " + temp + ", " + $2->name + "\n";
+				node->code += $2->code + ".> " + temp + "\n";
+			}
+			else {
+				node->code = $2->code + ".> " + $2->name + "\n";
+			}
 			$$ = node;
 	   };
 
@@ -466,7 +479,7 @@ assignment : IDENT ASSIGN expression {
 				std::string dst = $1;
 
 				node->code = $6->code + "[]= " + dst + ", " + $3->name + ", " + $6->name + "\n";
-				$$ = node;		
+				$$ = node;
 			 };
 
 expression : expression addop term {
