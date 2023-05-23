@@ -623,7 +623,7 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT {
 				CodeNode *num = new CodeNode;
 				std::string digit = $3;
 				num->code = digit;
-				Type t = Integer;
+				Type t = Array;
 				add_variable_to_symbol_table(value, t);
 				
 				CodeNode *node = new CodeNode;
