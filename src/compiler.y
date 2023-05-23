@@ -5,6 +5,7 @@
 #include<vector>
 #include<string.h>
 #include<stdlib.h>
+#include<sstream>
 
 extern int yylex(void);
 void yyerror(const char *msg);
@@ -27,6 +28,15 @@ struct Function {
 };
 
 std::vector <Function> symbol_table;
+
+std::string create_temp() {
+	static int num = 0;
+	std::ostringstream ss;
+	ss << num;
+	std::string value = "_temp" + ss.str();
+	num += 1;
+	return value;
+}
 
 Function *get_function() {
   int last = symbol_table.size()-1;
@@ -93,6 +103,7 @@ struct CodeNode {
 %token ISV READ WRITE WHILE EXIT CONTINUE IF ELSE RETURN LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN ASSIGN ADD SUBTRACT MULTIPLY DIVIDE MODULO LESSTHAN EQUAL GREATERTHAN NOTEQUAL LESSOREQUAL GREATEROREQUAL COMMA ENDLINE FUNC
 %token <op_val> IDENT
 %token <op_val> NUMBER
+%type <op_val> function_ident
 %type <node> functions
 %type <node> function
 %type <node> return_args
@@ -148,23 +159,21 @@ functions : function {
 				$$ = node;
 			};
 
-function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
+function : function_ident FUNC LPAREN args RPAREN LBRACE statements RETURN return_args ENDLINE RBRACE {
 	std::string func_name = $1;
 	CodeNode *params = $4;
 	CodeNode *body = $7;
 	CodeNode *returns = $9;
-	add_function_to_symbol_table(func_name);
 
 	std::string code = std::string("func ") + func_name + std::string("\n") + params->code + body->code + returns->code + std::string("endfunc\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;
 		   } | 
-		   IDENT FUNC LPAREN args RPAREN LBRACE statements RBRACE {
+		   function_ident FUNC LPAREN args RPAREN LBRACE statements RBRACE {
 			std::string func_name = $1;
 			CodeNode *params = $4;
 			CodeNode *body = $7;
-			add_function_to_symbol_table(func_name); 
 
 			std::string code = std::string("func ") + func_name + std::string("\n");
 			code += params->code;
@@ -175,6 +184,12 @@ function : IDENT FUNC LPAREN args RPAREN LBRACE statements RETURN return_args EN
 			node->code = code;
 			$$ = node;
 		   };
+
+function_ident : IDENT {
+	std::string func_name = $1;
+	add_function_to_symbol_table(func_name);
+	$$ = $1;
+}
 
 return_args : %empty {
 	CodeNode* node = new CodeNode;
