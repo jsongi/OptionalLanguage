@@ -123,7 +123,6 @@ struct CodeNode {
 %type <node> ext
 %type <node> assignment
 %type <node> expression
-%type <node> array_access
 %type <node> array_init
 %type <node> term
 %type <node> addop
@@ -133,7 +132,6 @@ struct CodeNode {
 %type <node> func_call_args
 %type <node> call_arguments
 %type <node> call_argument
-%type <node> assign_array
 
 %%
 
@@ -369,9 +367,8 @@ declaration_cont : IDENT {
 function_call : function_ident LPAREN func_call_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
-	add_function_to_symbol_table(func_name);
 	
-	std::string code = params->code + std::string("call ") + func_name + (", "); 
+	std::string code = params->name + std::string("call ") + func_name + (", "); 
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;			
@@ -387,32 +384,19 @@ get : READ IDENT ENDLINE {
 	node->code = code;
 	$$ = node;
 	  } | 
-	  READ array_access ENDLINE {
-		CodeNode *array = $2;
+	  READ IDENT LBRACK expression RBRACK ENDLINE {
+		// CodeNode *array = $2;
 		
-		std::string code = std::string(".[]< ") + array->code + std::string("\n");
-		CodeNode *node = new CodeNode;
-		node->code = code;
-		$$ = node;
+		// std::string code = std::string(".[]< ") + array->code + std::string("\n");
+		// CodeNode *node = new CodeNode;
+		// node->code = code;
+		// $$ = node;
 	  }; 
 
-give : WRITE IDENT ENDLINE {
-	std::string value = $2;
-	Type t = Integer;
-	add_variable_to_symbol_table(value, t);
-	
-	std::string code = std::string(".> ") + value + std::string("\n");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;
-	   } | 
-	   WRITE array_access ENDLINE {
-		CodeNode *array = $2;
-
-		std::string code = std::string(".[]> ") + array->code + std::string("\n");
-		CodeNode *node = new CodeNode;
-		node->code = code;
-		$$ = node;
+give : WRITE expression ENDLINE {
+			CodeNode *node = new CodeNode;
+			node->code = $2->code + ".> " + $2->name + "\n";
+			$$ = node;
 	   };
 
 ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE {
@@ -434,45 +418,16 @@ ext : EXIT ENDLINE {
 
 assignment : IDENT ASSIGN expression {
 				std::string value = $1;
-				CodeNode *expr = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
 				
 				CodeNode *node = new CodeNode;
-				node->code = expr->code + "= " + value + ", " + expr->name + std::string("\n");
+				node->code = $3->code + "= " + value + ", " + $3->name + "\n";
 				$$ = node; 
 			 } |
-			 assign_array ASSIGN expression {
-				CodeNode *arr = $1;
-				CodeNode *expr = $3;
-				//Type t = Integer;
-				//add_variable_to_symbol_table(value, t);	
-
-				std::string code = std::string("[]= ") + arr->code + expr->code; //needs handling for index positions	
-			 } | 
-			 IDENT ASSIGN function_call {
-				std::string value = $1;
-				CodeNode *func_call = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
-
-				std::string code = func_call->code + value + std::string("\n");
+			 IDENT LBRACK expression RBRACK ASSIGN expression  {
 				CodeNode *node = new CodeNode;
-				node->code = code;
-				$$ = node;
-			 } | 
-			 array_access ASSIGN function_call {
-				//leave 
-			 } |
-			 IDENT ASSIGN array_access {
-				std::string value = $1;
-				CodeNode *arr = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
+				std::string dst = $1;
 
-				std::string code = std::string("=[] ") + value + ", " + arr->code;
-				CodeNode *node = new CodeNode;
-				node->code = code;
+				node->code = $6->code + "[]= " + dst + ", " + $3->name + ", " + $6->name + "\n";
 				$$ = node;		
 			 };
 
@@ -536,18 +491,28 @@ factor : LPAREN expression RPAREN {
 			node->code = "";
 			$$ = node;
 		 } | 
-		 array_access {
-			$$ = $1;
-		 } | 
+		 IDENT LBRACK expression RBRACK {
+			std::string value = $1;
+			CodeNode* node = new CodeNode;
+			std::string temp = create_temp();
+			node->name = temp;
+
+			node->code = $3->code + ". " + temp + "\n";
+			node->code += "=[] " + temp + ", " + value + ", " + $3->name + "\n";
+			$$ = node;
+		 } |
 		 IDENT {
 			std::string value = $1;
-			Type t = Integer;
-			add_variable_to_symbol_table(value, t);
 			
-			std::string code = value;
 			CodeNode *node = new CodeNode;
-			node->code = code;
-			node->name = code;
+			node->code = "";
+			node->name = value;
+			$$ = node;
+		 } |
+		 function_call {
+			CodeNode* node = new CodeNode;
+			std::string temp = create_temp();
+			node->name = ". " + temp + "\n" + $1->code + temp + "\n";
 			$$ = node;
 		 };
 
@@ -592,27 +557,6 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT {
 				$$ = node;
 			 };
 
-array_assign : IDENT LBRACK expression RBRACK {
-				std::string value = $1;
-				CodeNode *expr = new CodeNode;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
-				
-				std::string code = value + ", " + expr->code + ", ";
-				CodeNode *node = new CodeNode;
-				node->code = code;
-				$$ = node;
-			  };
-
-array_access : IDENT LBRACK expression RBRACK {
-				std::string value = $1;
-				CodeNode *expr = new CodeNode;
-			
-				std::string code = value + ", " + expr->code + "\n";
-				CodeNode *node = new CodeNode;
-				node->code = code;
-				$$ = node;
-			};
 
 %%
 
