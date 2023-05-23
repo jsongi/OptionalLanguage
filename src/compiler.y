@@ -30,6 +30,16 @@ struct Function {
 
 std::vector <Function> symbol_table;
 
+bool has_main() {
+	bool TF = false;
+	for(int i = 0; i < symbol_table.size(); i++) {
+		Function *f = &symbol_table[i];
+		if(f->name == "main")
+			TF = true;
+	}
+	return TF;
+}
+
 std::string create_temp() {
 	static int num = 0;
 	std::ostringstream ss;
@@ -142,6 +152,11 @@ prog_start : %empty {
 			 functions {
 				CodeNode *node = $1;
 				std::string code = node->code;
+		
+				if(!has_main()) {
+					std::string message = std::string("no main function found");
+					yyerror(message.c_str());
+				}
 				// printf("Generated code:\n");
 				printf("%s\n", code.c_str());
 			 };
@@ -241,7 +256,7 @@ call_arguments : call_argument {
 
 call_argument : expression {
 	CodeNode *param = $1;
-	std::string code = param->code + std::string("\n");
+	std::string code = param->name + std::string("\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;
@@ -322,9 +337,20 @@ statement : declaration ENDLINE {
 
 declaration : ISV IDENT {
 		std::string value = $2;
+		if(find(value)) {
+			std::string message = std::string("cannot redefine variable '") + value + std::string("'");
+			yyerror(message.c_str());
+		}
+	
+		if(value == "whilst" || value == "otherwise" || value == "get" || value == "give" || value == "exit" || value == "next"
+			|| value == "return") {
+			std::string message = std::string("cannot use variable name '") + value + std::string("'");
+			yyerror(message.c_str());
+		}	
+		
 		Type t = Integer;
 		add_variable_to_symbol_table(value, t);
-
+		
 		std::string code = std::string(". ") + value + std::string("\n");
 		CodeNode *node = new CodeNode;
 		node->code = code;
@@ -333,6 +359,12 @@ declaration : ISV IDENT {
 			  ISV IDENT COMMA declaration_cont {
 				std::string value = $2;
 				CodeNode* decls = $4;
+
+				if(find(value)) {
+					std::string message = std::string("cannot redefine variable '") + value + std::string("'");
+					yyerror(message.c_str());
+				}
+
 				Type t = Integer;
 				add_variable_to_symbol_table(value, t);
 			
@@ -367,7 +399,10 @@ declaration_cont : IDENT {
 function_call : function_ident LPAREN func_call_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
-	
+	if(!find(func_name)) {
+		std::string message = std::string("unidentified function '") + func_name + std::string("'");
+		yyerror(message.c_str());
+	}
 	std::string code = params->name + std::string("call ") + func_name + (", "); 
 	CodeNode *node = new CodeNode;
 	node->code = code;
@@ -376,8 +411,11 @@ function_call : function_ident LPAREN func_call_args RPAREN {
 
 get : READ IDENT ENDLINE {
 	std::string value = $2;
-	Type t = Integer;
-	add_variable_to_symbol_table(value, t);
+	
+	if(!find(value)) {
+		std::string message = std::string("variable undeclared '") + value + std::string("'");
+		yyerror(message.c_str());
+	}
 	
 	std::string code = std::string(".< ") + value + std::string("\n");
 	CodeNode *node = new CodeNode;
@@ -437,7 +475,7 @@ expression : expression addop term {
 				node->name = temp;
 				node->code = $1->code + $3->code + ". " + temp + "\n";
 				node->code += $2->code + temp + ", " + $1->name + ", " + $3->name + "\n";
-				$$ = node;
+					$$ = node;
 			 } | 
 			 term {
 			 	$$ = $1;		
@@ -556,7 +594,6 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT {
 				node->code = code;
 				$$ = node;
 			 };
-
 
 %%
 
