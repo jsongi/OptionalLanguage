@@ -129,6 +129,9 @@ struct CodeNode {
 %type <node> mulop
 %type <node> factor
 %type <node> relational_args
+%type <node> func_call_args
+%type <node> call_arguments
+%type <node> call_argument
 
 %%
 
@@ -209,9 +212,40 @@ func_args : %empty {
 	   	arguments {
 			CodeNode* stm1 = $1;
 			CodeNode* node = new CodeNode;
-			node->code = "param " + stm1->code;
+			node->code = ". " + stm1->code;
 			$$ = node;
 	   	};
+
+func_call_args : %empty {
+	CodeNode *node = new CodeNode;
+	$$ = node;
+		} |
+		call_arguments {
+			CodeNode *stm1 = $1;
+			CodeNode *node = new CodeNode;
+			node->code = std::string("params ") + stm1->code;
+			$$ = node;
+		};
+
+call_arguments : call_argument {
+				$$ = $1;
+		} |
+		call_argument COMMA call_arguments {
+			CodeNode *param = $1;
+			CodeNode *params = $3;
+			std::string code = param->code + std::string("params ") + params->code;
+			CodeNode *node = new CodeNode;
+			node->code = code;
+			$$ = node;
+		};
+
+call_argument : expression {
+	CodeNode *param = $1;
+	std::string code = param->code + std::string("\n");
+	CodeNode *node = new CodeNode;
+	node->code = code;
+	$$ = node;
+		};
 
 arguments : argument {
 				$$ = $1;
@@ -219,7 +253,7 @@ arguments : argument {
 	    	argument COMMA arguments {
 				CodeNode *param = $1;
 				CodeNode *params = $3;
-				std::string code = param->code + "param " + params->code;
+				std::string code = param->code + ". " + params->code;
 				CodeNode *node = new CodeNode;
 				node->code = code;
 				$$ = node;
@@ -318,12 +352,12 @@ declaration_cont : IDENT {
 					$$ = node;			
 				   };
 
-function_call : IDENT LPAREN func_args RPAREN {
+function_call : function_ident LPAREN func_call_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
 	add_function_to_symbol_table(func_name);
 	
-	std::string code = params->code + std::string("\n") + std::string("call ") + func_name + (", "); 
+	std::string code = params->code + std::string("call ") + func_name + (", "); 
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;			
@@ -405,11 +439,13 @@ assignment : IDENT ASSIGN expression {
 			 } | 
 			 IDENT ASSIGN function_call {
 				std::string value = $1;
-				
+				CodeNode *func_call = $3;
 				Type t = Integer;
 				add_variable_to_symbol_table(value, t);
 
+				std::string code = func_call->code + value + std::string("\n");
 				CodeNode *node = new CodeNode;
+				node->code = code;
 				$$ = node;
 			 } | 
 			 array_access ASSIGN function_call {
