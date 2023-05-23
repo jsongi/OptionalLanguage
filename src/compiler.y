@@ -243,7 +243,7 @@ call_arguments : call_argument {
 
 call_argument : expression {
 	CodeNode *param = $1;
-	std::string code = param->code + std::string("\n");
+	std::string code = param->name + std::string("\n");
 	CodeNode *node = new CodeNode;
 	node->code = code;
 	$$ = node;
@@ -464,7 +464,7 @@ assignment : IDENT ASSIGN expression {
 			 array_access ASSIGN function_call {
 				//leave 
 			 } |
-			 IDENT ASSIGN array_access {
+			 IDENT ASSIGN assign_array {
 				std::string value = $1;
 				CodeNode *arr = $3;
 				Type t = Integer;
@@ -482,7 +482,7 @@ expression : expression addop term {
 				node->name = temp;
 				node->code = $1->code + $3->code + ". " + temp + "\n";
 				node->code += $2->code + temp + ", " + $1->name + ", " + $3->name + "\n";
-				$$ = node;
+					$$ = node;
 			 } | 
 			 term {
 			 	$$ = $1;		
@@ -592,7 +592,7 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT {
 				$$ = node;
 			 };
 
-array_assign : IDENT LBRACK expression RBRACK {
+assign_array : IDENT LBRACK expression RBRACK {
 				std::string value = $1;
 				CodeNode *expr = new CodeNode;
 				Type t = Integer;
