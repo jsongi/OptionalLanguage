@@ -366,7 +366,12 @@ declaration : ISV IDENT {
 					std::string message = std::string("cannot redefine variable '") + value + std::string("'");
 					yyerror(message.c_str());
 				}
-
+				
+				if(value == "whilst" || value == "otherwise" || value == "get" || value == "give" || value == "exit" || value == "next"
+                 		       || value == "return") {
+                        		std::string message = std::string("cannot use variable name '") + value + std::string("'");
+                       			yyerror(message.c_str());
+                		}
 				Type t = Integer;
 				add_variable_to_symbol_table(value, t);
 			
