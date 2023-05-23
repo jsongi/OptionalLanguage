@@ -139,7 +139,7 @@ prog_start : %empty {
 			 functions {
 				CodeNode *node = $1;
 				std::string code = node->code;
-				printf("Generated code:\n");
+				// printf("Generated code:\n");
 				printf("%s\n", code.c_str());
 			 };
 
@@ -385,15 +385,14 @@ ext : EXIT ENDLINE {
 	  };
 
 assignment : IDENT ASSIGN expression {
-	std::string value = $1;
-	CodeNode *expr = $3;
-	Type t = Integer;
-	add_variable_to_symbol_table(value, t);
-	
-	std::string code = std::string("= ") + value + std::string(", ") + expr->code + std::string("\n");		
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node; 
+				std::string value = $1;
+				CodeNode *expr = $3;
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);
+				
+				CodeNode *node = new CodeNode;
+				node->code = expr->code + "= " + value + ", " + expr->name + std::string("\n");
+				$$ = node; 
 			 } |
 			 array_access ASSIGN expression {
 				CodeNode *arr = $1;
@@ -417,76 +416,67 @@ assignment : IDENT ASSIGN expression {
 			 }
 
 expression : expression addop term {
-	CodeNode *expr = $1;
-	CodeNode *op = $2;
-	CodeNode *trm = $3;
-	
-	std::string code = expr->code + op->code + trm->code + std::string("\n");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;		 
+				CodeNode* node = new CodeNode;
+				std::string temp = create_temp();
+				node->name = temp;
+				node->code = $1->code + $3->code + ". " + temp + "\n";
+				node->code += $2->code + temp + ", " + $1->name + ", " + $3->name + "\n";
+				$$ = node;
 			 } | 
 			 term {
 			 	$$ = $1;		
 			 };
-
 addop : ADD {
-	std::string code = std::string("+ ");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;	
+			CodeNode* node = new CodeNode;
+			node->code = "+ ";
+			$$ = node;
 		} | 
 		SUBTRACT {
-			std::string code = std::string("- ");
-			CodeNode *node = new CodeNode;
-			node->code = code;
-			$$ = node;	
+			CodeNode* node = new CodeNode;
+			node->code = "- ";
+			$$ = node;
 		};
 
 term : term mulop factor {
-	CodeNode *trm = $1;
-	CodeNode *op = $2;
-	CodeNode *fac = $3;
-
-	std::string code = trm->code + op->code + fac->code + std::string("\n");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;
+			CodeNode* node = new CodeNode;
+			std::string temp = create_temp();
+			node->name = temp;
+			node->code = $1->code + $3->code + ". " + temp + "\n";
+			node->code += $2->code + temp + ", " + $1->name + ", " + $3->name + "\n";
+			$$ = node;
 	   } | 
 	   factor {
-		$$ = $1;
+			$$ = $1;
 	   };
 
 mulop : MULTIPLY {
-	std::string code = std::string("* ");
-	CodeNode *node = new CodeNode; 
-	node->code = code;
-	$$ = node;	
+			CodeNode* node = new CodeNode;
+			node->code = "* ";
+			$$ = node;
 		} | 
 		DIVIDE {
-			std::string code = std::string("/ ");
-			CodeNode *node = new CodeNode;
-			node->code = code;
-			$$ = node;	
+			CodeNode* node = new CodeNode;
+			node->code = "/ ";
+			$$ = node;
 		} |
 		MODULO {
-			std::string code = std::string("% ");
-			CodeNode *node = new CodeNode;
-			node->code = code;
+			CodeNode* node = new CodeNode;
+			node->code = "% ";
 			$$ = node;
 		};
 
 factor : LPAREN expression RPAREN {
-	$$ = $2;
+			$$ = $2;
 		 } | 
 		 NUMBER {
 			CodeNode *node = new CodeNode;
 			std::string digit = $1;
-			node->code = digit;
+			node->name = digit;
+			node->code = "";
 			$$ = node;
 		 } | 
-		 IDENT LBRACK expression RBRACK {
-			
+		 array_access {
+			$$ = $1;
 		 } | 
 		 IDENT {
 			std::string value = $1;
