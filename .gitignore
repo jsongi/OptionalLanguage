@@ -1,5 +1,7 @@
 src/lex.yy.c
 src/parser
-src/y.output
-src/y.tab.c
-src/y.tab.h
+src/compiler.output
+src/compiler.tab.c
+src/compiler.tab.h
+src/compiler
+src/code.mil
