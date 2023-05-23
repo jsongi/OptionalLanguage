@@ -324,9 +324,20 @@ statement : declaration ENDLINE {
 
 declaration : ISV IDENT {
 		std::string value = $2;
+		if(find(value)) {
+			std::string message = std::string("cannot redefine variable '") + value + std::string("'");
+			yyerror(message.c_str());
+		}
+	
+		if(value == "whilst" || value == "otherwise" || value == "get" || value == "give" || value == "exit" || value == "next"
+			|| value == "return") {
+			std::string message = std::string("cannot use variable name '") + value + std::string("'");
+			yyerror(message.c_str());
+		}	
+		
 		Type t = Integer;
 		add_variable_to_symbol_table(value, t);
-
+		
 		std::string code = std::string(". ") + value + std::string("\n");
 		CodeNode *node = new CodeNode;
 		node->code = code;
@@ -335,6 +346,12 @@ declaration : ISV IDENT {
 			  ISV IDENT COMMA declaration_cont {
 				std::string value = $2;
 				CodeNode* decls = $4;
+
+				if(find(value)) {
+					std::string message = std::string("cannot redefine variable '") + value + std::string("'");
+					yyerror(message.c_str());
+				}
+
 				Type t = Integer;
 				add_variable_to_symbol_table(value, t);
 			
@@ -369,7 +386,10 @@ declaration_cont : IDENT {
 function_call : function_ident LPAREN func_call_args RPAREN {
 	std::string func_name = $1;
 	CodeNode* params = $3;
-	add_function_to_symbol_table(func_name);
+	if(!find(func_name)) {
+		std::string message = std::string("unidentified function '") + func_name + std::string("'");
+		yyerror(message.c_str());
+	}
 	
 	std::string code = params->code + std::string("call ") + func_name + (", "); 
 	CodeNode *node = new CodeNode;
@@ -379,8 +399,11 @@ function_call : function_ident LPAREN func_call_args RPAREN {
 
 get : READ IDENT ENDLINE {
 	std::string value = $2;
-	Type t = Integer;
-	add_variable_to_symbol_table(value, t);
+	
+	if(!find(value)) {
+		std::string message = std::string("variable undeclared '") + value + std::string("'");
+		yyerror(message.c_str());
+	}
 	
 	std::string code = std::string(".< ") + value + std::string("\n");
 	CodeNode *node = new CodeNode;
@@ -398,8 +421,11 @@ get : READ IDENT ENDLINE {
 
 give : WRITE IDENT ENDLINE {
 	std::string value = $2;
-	Type t = Integer;
-	add_variable_to_symbol_table(value, t);
+	
+	if(!find(value)) {
+                std::string message = std::string("variable undeclared '") + value + std::string("'");
+                yyerror(message.c_str());
+        }
 	
 	std::string code = std::string(".> ") + value + std::string("\n");
 	CodeNode *node = new CodeNode;
@@ -435,8 +461,11 @@ ext : EXIT ENDLINE {
 assignment : IDENT ASSIGN expression {
 				std::string value = $1;
 				CodeNode *expr = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
+				
+				if(!find(value)) {
+                			std::string message = std::string("variable undeclared '") + value + std::string("'");
+                			yyerror(message.c_str());
+        			}
 				
 				CodeNode *node = new CodeNode;
 				node->code = expr->code + "= " + value + ", " + expr->name + std::string("\n");
@@ -453,8 +482,11 @@ assignment : IDENT ASSIGN expression {
 			 IDENT ASSIGN function_call {
 				std::string value = $1;
 				CodeNode *func_call = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
+				
+				if(!find(value)) {
+                			std::string message = std::string("variable undeclared '") + value + std::string("'");
+                			yyerror(message.c_str());
+        			}
 
 				std::string code = func_call->code + value + std::string("\n");
 				CodeNode *node = new CodeNode;
@@ -467,8 +499,11 @@ assignment : IDENT ASSIGN expression {
 			 IDENT ASSIGN assign_array {
 				std::string value = $1;
 				CodeNode *arr = $3;
-				Type t = Integer;
-				add_variable_to_symbol_table(value, t);
+
+				if(!find(value)) {
+                			std::string message = std::string("variable undeclared '") + value + std::string("'");
+                			yyerror(message.c_str());
+        			}
 
 				std::string code = std::string("=[] ") + value + ", " + arr->code;
 				CodeNode *node = new CodeNode;
