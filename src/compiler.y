@@ -133,6 +133,7 @@ struct CodeNode {
 %type <node> func_call_args
 %type <node> call_arguments
 %type <node> call_argument
+%type <node> assign_array
 
 %%
 
@@ -442,13 +443,13 @@ assignment : IDENT ASSIGN expression {
 	node->code = code;
 	$$ = node; 
 			 } |
-			 array_access ASSIGN expression {
+			 assign_array ASSIGN expression {
 				CodeNode *arr = $1;
 				CodeNode *expr = $3;
 				//Type t = Integer;
 				//add_variable_to_symbol_table(value, t);	
 
-				std::string code = std::string(""); //needs handling for index positions	
+				std::string code = std::string("[]= ") + arr->code + expr->code; //needs handling for index positions	
 			 } | 
 			 IDENT ASSIGN function_call {
 				std::string value = $1;
@@ -462,8 +463,19 @@ assignment : IDENT ASSIGN expression {
 				$$ = node;
 			 } | 
 			 array_access ASSIGN function_call {
-				
-			 }
+				//leave 
+			 } |
+			 IDENT ASSIGN array_access {
+				std::string value = $1;
+				CodeNode *arr = $3;
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);
+
+				std::string code = std::string("=[] ") + value + ", " + arr->code;
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;		
+			 };
 
 expression : expression addop term {
 	CodeNode *expr = $1;
@@ -577,12 +589,40 @@ relational_symbol : LESSTHAN {
 					};
 
 array_init : ISV LBRACK NUMBER RBRACK IDENT {
-			 
+			 	std::string value = $5;
+				CodeNode *num = new CodeNode;
+				std::string digit = $3;
+				num->code = digit;
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);
+				
+				CodeNode *node = new CodeNode;
+				std::string code = ".[] " + value + ", " + num->code + "\n";
+				node->code = code;
+				$$ = node;
 			 };
 
-array_access : IDENT LBRACK expression RBRACK {
-			  
+array_assign : IDENT LBRACK expression RBRACK {
+				std::string value = $1;
+				CodeNode *expr = new CodeNode;
+				Type t = Integer;
+				add_variable_to_symbol_table(value, t);
+				
+				std::string code = value + ", " + expr->code + ", ";
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 			  };
+
+array_access : IDENT LBRACK expression RBRACK {
+				std::string value = $1;
+				CodeNode *expr = new CodeNode;
+			
+				std::string code = value + ", " + expr->code + "\n";
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
+			};
 
 %%
 
