@@ -273,31 +273,27 @@ func_call_args : %empty {
 					$$ = node;
 				 } |
 				 call_arguments {
-					CodeNode *stm1 = $1;
 					CodeNode *node = new CodeNode;
-					node->code = std::string("param ") + stm1->code;
+					node->code = $1->code + $1->name;
 					$$ = node;
 				 };
 
 call_arguments : call_argument {
-				$$ = $1;
-		} |
-		call_argument COMMA call_arguments {
-			CodeNode *param = $1;
-			CodeNode *params = $3;
-			std::string code = param->code + std::string("param ") + params->code;
-			CodeNode *node = new CodeNode;
-			node->code = code;
-			$$ = node;
-		};
+					CodeNode* node = new CodeNode;
+					node->code = $1->code;
+					node->name = "param " + $1->name + "\n";
+					$$ = node;
+				 } |
+				 call_argument COMMA call_arguments {
+					CodeNode* node = new CodeNode;
+					node->code = $3->code + $1->code;
+					node->name = $3->name + "param " + $1->name + "\n";
+					$$ = node;
+				 };
 
 call_argument : expression {
-	CodeNode *param = $1;
-	std::string code = param->name + std::string("\n");
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;
-		};
+					$$ = $1;
+				};
 
 arguments : argument {
 				$$ = $1;
@@ -436,7 +432,7 @@ function_call : IDENT LPAREN func_call_args RPAREN {
 					}
 
 					std::string temp = create_temp();
-					std::string code = $3->name + ". " + temp + "\n" + $3->code + "call " + func_name + ", " + temp + "\n"; 
+					std::string code = $3->code + ". " + temp + "\n" + $3->code + "call " + func_name + ", " + temp + "\n"; 
 					node->name = temp;
 					node->code = code;
 					$$ = node;			
