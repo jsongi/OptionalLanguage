@@ -646,24 +646,24 @@ relational_symbol : LESSTHAN {
 					};
 
 array_init : ISV LBRACK NUMBER RBRACK IDENT {
-                                std::string value = $5;
-                                std::string digit = $3;
-                                if (digit[0] == '0' || digit[0] == '0'){
-                                        std::string message = "Error: Array size must be greater than or equal to 0";
-                                        yyerror(message.c_str());
-                                }
-                                else{
-                                CodeNode *num = new CodeNode;
-                                num->code = digit;
-                                Type t = Array;
-                                add_variable_to_symbol_table(value, t);
+				std::string value = $5;
+				std::string digit = $3;
+				if (digit[0] == '0' || digit[0] == '0'){
+						std::string message = "Error: Array size must be greater than or equal to 0";
+						yyerror(message.c_str());
+				}
+				else{
+				CodeNode *num = new CodeNode;
+				num->code = digit;
+				Type t = Array;
+				add_variable_to_symbol_table(value, t);
 
-                                CodeNode *node = new CodeNode;
-                                std::string code = ".[] " + value + ", " + num->code + "\n";
-                                node->code = code;
-                                $$ = node;
-                                }
-                         };
+				CodeNode *node = new CodeNode;
+				std::string code = ".[] " + value + ", " + num->code + "\n";
+				node->code = code;
+				$$ = node;
+				}
+			};
 
 %%
 
