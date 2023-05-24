@@ -16,7 +16,7 @@ int numberToken;
 int  count_names = 0;
 int param_num = 0;
 
-enum Type { Integer, Array };
+enum Type { Integer, Array, Null };
 
 struct Symbol {
   std::string name;
@@ -77,7 +77,7 @@ Type get_var_type(std::string &value) {
 		if(s->name == value)
 			return s->type;
 	}
-	return Array;
+	return Null;
 }
 	
 bool find(std::string &value) {
@@ -259,7 +259,10 @@ func_args : %empty {
 			std::string line;
 			int num = 0;
 			while (std::getline(ss, line)) {
-				node->code += "= " + line.substr(2, line.find(',') - 1) + ", $" + std::to_string(num) + "\n";
+				std::string varName = line.substr(2, line.find(',') - 1);
+				Type t = Integer;
+				add_variable_to_symbol_table(varName, t);
+				node->code += "= " + varName + ", $" + std::to_string(num) + "\n";
 				++num;
 			}
 			$$ = node;
@@ -606,10 +609,10 @@ factor : LPAREN expression RPAREN {
 		 IDENT {
 			std::string value = $1;
 			
-			// if(get_var_type(value) == Array) {
-			// 	std::string message = std::string("attempt to access array as regular integer variable");
-			// 	yyerror(message.c_str());
-			// }
+			if(get_var_type(value) == Array) {
+				std::string message = std::string("attempt to access array as regular integer variable");
+				yyerror(message.c_str());
+			}
 			CodeNode *node = new CodeNode;
 			node->code = "";
 			node->name = $1;
