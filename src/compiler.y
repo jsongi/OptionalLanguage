@@ -59,6 +59,15 @@ std::string create_temp() {
 	return value;
 }
 
+std::string create_label() {
+	static int num = 0;
+	std::ostringstream ss;
+	ss << num;
+	std::string value = "label" + ss.str();
+	num += 1;
+	return value;
+}
+
 Function *get_function() {
   int last = symbol_table.size()-1;
   if (last < 0) {
@@ -135,6 +144,7 @@ struct CodeNode {
 %token <op_val> IDENT
 %token <op_val> NUMBER
 %type <op_val> function_ident
+%type <node> relational_symbol
 %type <node> functions
 %type <node> function
 %type <node> return_arg
@@ -232,11 +242,10 @@ function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RETURN 
 		   };
 
 function_ident : IDENT {
-	std::string func_name = $1;
-	add_function_to_symbol_table(func_name);
-	$$ = $1;
-}
-
+					std::string func_name = $1;
+					add_function_to_symbol_table(func_name);
+					$$ = $1;
+				 }
 return_arg : %empty {
 				CodeNode* node = new CodeNode;
 				node->code = "ret 0\n";
@@ -478,18 +487,6 @@ give : WRITE expression ENDLINE {
 			}
 			$$ = node;
 	   };
-
-ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE {
-			  
-			  } | 
-			  IF LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
-				
-			  };
-
-whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE {
-		 
-		 };
-
 ext : EXIT ENDLINE {
 	  		CodeNode* node = new CodeNode;
 			node->code = "ret 0\n";
@@ -617,32 +614,55 @@ factor : LPAREN expression RPAREN {
 		 function_call {
 			$$ = $1;
 		 };
+ifotherwise : IF LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
+			  
+			  } | 
+			  IF LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
+				
+			  };
 
-relational : relational_args relational_symbol relational_args {
-			 
-			 };
+whilst : WHILE LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
+			CodeNode* node = new CodeNode;
+			std::string labelName = create_label();
+			std::string temp = create_temp();
+			std::string conditional = std::string($4->name) + temp + ", " + std::string($3->name) + ", " + std::string($5->name) + "\n?:= end_" + labelName + ", " + temp + "\n";
+			node->code = ": begin_" + labelName + "\n. " + temp + "\n" + $3->code + $5->code + conditional + $8->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
+			$$ = node;
+		 };
 
 relational_args : expression {
-	$$ = $1;			  
+					$$ = $1;			  
 				  };
 
 relational_symbol : LESSTHAN {
-					
+					 CodeNode* node = new CodeNode;
+					 node->name = ">= ";
+					 $$ = node;
 					} | 
 					EQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "!= ";
+					 $$ = node;
 					} | 
 					GREATERTHAN {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "<= ";
+					 $$ = node;
 					} | 
 					NOTEQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "== ";
+					 $$ = node;
 					} | 
 					LESSOREQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "> ";
+					 $$ = node;
 					} | 
 					GREATEROREQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "< ";
+					 $$ = node;
 					};
 
 array_init : ISV LBRACK NUMBER RBRACK IDENT {
