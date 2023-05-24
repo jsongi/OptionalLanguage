@@ -665,7 +665,7 @@ array_init : ISV LBRACK NUMBER RBRACK IDENT {
                                 }
                          };
 
-%&
+%%
 
 int main(int argc, char** argv) {
 	yyparse();
