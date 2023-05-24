@@ -648,6 +648,10 @@ relational_symbol : LESSTHAN {
 array_init : ISV LBRACK NUMBER RBRACK IDENT {
 				std::string value = $5;
 				std::string digit = $3;
+				if ( find(value) ) {
+					std::string message = "cannot redefine variable '" + value + "'";
+					yyerror(message.c_str());
+				} 
 				if (digit[0] == '0' || digit[0] == '0'){
 						std::string message = "Error: Array size must be greater than or equal to 0";
 						yyerror(message.c_str());
