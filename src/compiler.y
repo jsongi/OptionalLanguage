@@ -259,7 +259,7 @@ func_args : %empty {
 			std::string line;
 			int num = 0;
 			while (std::getline(ss, line)) {
-				node->code += "= " + line.substr(2, 3) + ", $" + std::to_string(num) + "\n";
+				node->code += "= " + line.substr(2, line.find(',') - 1) + ", $" + std::to_string(num) + "\n";
 				++num;
 			}
 			$$ = node;
@@ -606,10 +606,10 @@ factor : LPAREN expression RPAREN {
 		 IDENT {
 			std::string value = $1;
 			
-			if(get_var_type(value) == Array) {
-				std::string message = std::string("attempt to access array as regular integer variable");
-				yyerror(message.c_str());
-			}
+			// if(get_var_type(value) == Array) {
+			// 	std::string message = std::string("attempt to access array as regular integer variable");
+			// 	yyerror(message.c_str());
+			// }
 			CodeNode *node = new CodeNode;
 			node->code = "";
 			node->name = $1;
