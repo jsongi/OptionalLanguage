@@ -147,6 +147,7 @@ struct CodeNode {
 %token <op_val> IDENT
 %token <op_val> NUMBER
 %type <op_val> function_ident
+%type <node> relational
 %type <node> relational_symbol
 %type <node> functions
 %type <node> function
@@ -364,7 +365,10 @@ statement : declaration ENDLINE {
 				$$ = $1;
 			} | 
 			CONTINUE ENDLINE {
-				printf("in continue");
+				if (labels.empty()) {
+					std::string message = "cannot have a 'next' statement outside a while loop";
+					yyerror(message.c_str());
+				} 
 				CodeNode* node = new CodeNode;
 				node->code = ":= begin_" + labels.top() + "\n";
 				$$ = node;
@@ -631,13 +635,10 @@ ifotherwise : IF LPAREN relational_args relational_symbol relational_args RPAREN
 				
 			  };
 
-whilst : while_label LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
-			printf("in whilst\n");
+whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
 			CodeNode* node = new CodeNode;
 			std::string labelName = $1->name;
-			std::string temp = create_temp();
-			std::string conditional = std::string($4->name) + temp + ", " + std::string($3->name) + ", " + std::string($5->name) + "\n?:= end_" + labelName + ", " + temp + "\n";
-			node->code = ": begin_" + labelName + "\n. " + temp + "\n" + $3->code + $5->code + conditional + $8->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
+			node->code = ": begin_" + labelName + "\n" + $3->code + $6->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
 			labels.pop();
 			$$ = node;
 		 };
@@ -647,6 +648,17 @@ while_label : WHILE {
 				labels.push(node->name);
 				$$ = node;
 			  }
+relational : relational_args relational_symbol relational_args {
+				CodeNode* node = new CodeNode;
+				std::string labelName = labels.top();
+				std::string temp = create_temp();
+				std::string initTemp = ". " + temp + "\n";
+				// symbol dst, src1, src2
+				std::string conditionalJump = std::string($2->name) + temp + ", " + std::string($1->name) + ", " + std::string($3->name) + "\n?:= end_" + labelName + ", " + temp + "\n";
+
+				node->code = initTemp + $1->code + $3->code + conditionalJump;
+				$$ = node;
+			 };
 relational_args : expression {
 					$$ = $1;			  
 				  };
