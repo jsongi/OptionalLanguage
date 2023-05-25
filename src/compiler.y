@@ -6,6 +6,7 @@
 #include<string.h>
 #include<stdlib.h>
 #include<sstream>
+#include<stack>
 
 extern int yylex(void);
 void yyerror(const char *msg);
@@ -29,6 +30,8 @@ struct Function {
 };
 
 std::vector <Function> symbol_table;
+std::stack <std::string> labels;
+
 
 bool has_main() {
 	bool TF = false;
@@ -172,6 +175,7 @@ struct CodeNode {
 %type <node> func_call_args
 %type <node> call_arguments
 %type <node> call_argument
+%type <node> while_label
 
 %%
 
@@ -359,6 +363,12 @@ statement : declaration ENDLINE {
 			ext {
 				$$ = $1;
 			} | 
+			CONTINUE ENDLINE {
+				printf("in continue");
+				CodeNode* node = new CodeNode;
+				node->code = ":= begin_" + labels.top() + "\n";
+				$$ = node;
+			} |
 			assignment ENDLINE {
 				$$ = $1;
 			} | 
@@ -621,15 +631,22 @@ ifotherwise : IF LPAREN relational_args relational_symbol relational_args RPAREN
 				
 			  };
 
-whilst : WHILE LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
+whilst : while_label LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
+			printf("in whilst\n");
 			CodeNode* node = new CodeNode;
-			std::string labelName = create_label();
+			std::string labelName = $1->name;
 			std::string temp = create_temp();
 			std::string conditional = std::string($4->name) + temp + ", " + std::string($3->name) + ", " + std::string($5->name) + "\n?:= end_" + labelName + ", " + temp + "\n";
 			node->code = ": begin_" + labelName + "\n. " + temp + "\n" + $3->code + $5->code + conditional + $8->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
+			labels.pop();
 			$$ = node;
 		 };
-
+while_label : WHILE {
+				CodeNode* node = new CodeNode;
+				node->name = create_label();
+				labels.push(node->name);
+				$$ = node;
+			  }
 relational_args : expression {
 					$$ = $1;			  
 				  };
