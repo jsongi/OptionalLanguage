@@ -6,6 +6,7 @@
 #include<string.h>
 #include<stdlib.h>
 #include<sstream>
+#include<stack>
 
 extern int yylex(void);
 void yyerror(const char *msg);
@@ -29,6 +30,8 @@ struct Function {
 };
 
 std::vector <Function> symbol_table;
+std::stack <std::string> labels;
+
 
 bool has_main() {
 	bool TF = false;
@@ -55,6 +58,15 @@ std::string create_temp() {
 	std::ostringstream ss;
 	ss << num;
 	std::string value = "_temp" + ss.str();
+	num += 1;
+	return value;
+}
+
+std::string create_label() {
+	static int num = 0;
+	std::ostringstream ss;
+	ss << num;
+	std::string value = "label" + ss.str();
 	num += 1;
 	return value;
 }
@@ -135,6 +147,8 @@ struct CodeNode {
 %token <op_val> IDENT
 %token <op_val> NUMBER
 %type <op_val> function_ident
+%type <node> relational
+%type <node> relational_symbol
 %type <node> functions
 %type <node> function
 %type <node> return_arg
@@ -162,6 +176,7 @@ struct CodeNode {
 %type <node> func_call_args
 %type <node> call_arguments
 %type <node> call_argument
+%type <node> while_label
 
 %%
 
@@ -232,11 +247,10 @@ function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RETURN 
 		   };
 
 function_ident : IDENT {
-	std::string func_name = $1;
-	add_function_to_symbol_table(func_name);
-	$$ = $1;
-}
-
+					std::string func_name = $1;
+					add_function_to_symbol_table(func_name);
+					$$ = $1;
+				 }
 return_arg : %empty {
 				CodeNode* node = new CodeNode;
 				node->code = "ret 0\n";
@@ -350,6 +364,15 @@ statement : declaration ENDLINE {
 			ext {
 				$$ = $1;
 			} | 
+			CONTINUE ENDLINE {
+				if (labels.empty()) {
+					std::string message = "cannot have a 'next' statement outside a while loop";
+					yyerror(message.c_str());
+				} 
+				CodeNode* node = new CodeNode;
+				node->code = ":= begin_" + labels.top() + "\n";
+				$$ = node;
+			} |
 			assignment ENDLINE {
 				$$ = $1;
 			} | 
@@ -478,18 +501,6 @@ give : WRITE expression ENDLINE {
 			}
 			$$ = node;
 	   };
-
-ifotherwise : IF LPAREN relational RPAREN LBRACE statements RBRACE {
-			  
-			  } | 
-			  IF LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
-				
-			  };
-
-whilst : WHILE LPAREN relational RPAREN LBRACE statements RBRACE {
-		 
-		 };
-
 ext : EXIT ENDLINE {
 	  		CodeNode* node = new CodeNode;
 			node->code = "ret 0\n";
@@ -617,59 +628,95 @@ factor : LPAREN expression RPAREN {
 		 function_call {
 			$$ = $1;
 		 };
+ifotherwise : IF LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
+			  
+			  } | 
+			  IF LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
+				
+			  };
 
+whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
+			CodeNode* node = new CodeNode;
+			std::string labelName = $1->name;
+			node->code = ": begin_" + labelName + "\n" + $3->code + $6->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
+			labels.pop();
+			$$ = node;
+		 };
+while_label : WHILE {
+				CodeNode* node = new CodeNode;
+				node->name = create_label();
+				labels.push(node->name);
+				$$ = node;
+			  }
 relational : relational_args relational_symbol relational_args {
-			 
-			 };
+				CodeNode* node = new CodeNode;
+				std::string labelName = labels.top();
+				std::string temp = create_temp();
+				std::string initTemp = ". " + temp + "\n";
+				// symbol dst, src1, src2
+				std::string conditionalJump = std::string($2->name) + temp + ", " + std::string($1->name) + ", " + std::string($3->name) + "\n?:= end_" + labelName + ", " + temp + "\n";
 
+				node->code = initTemp + $1->code + $3->code + conditionalJump;
+				$$ = node;
+			 };
 relational_args : expression {
-	$$ = $1;			  
+					$$ = $1;			  
 				  };
 
 relational_symbol : LESSTHAN {
-					
+					 CodeNode* node = new CodeNode;
+					 node->name = ">= ";
+					 $$ = node;
 					} | 
 					EQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "!= ";
+					 $$ = node;
 					} | 
 					GREATERTHAN {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "<= ";
+					 $$ = node;
 					} | 
 					NOTEQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "== ";
+					 $$ = node;
 					} | 
 					LESSOREQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "> ";
+					 $$ = node;
 					} | 
 					GREATEROREQUAL {
-						
+					 CodeNode* node = new CodeNode;
+					 node->name = "< ";
+					 $$ = node;
 					};
 
 array_init : ISV LBRACK NUMBER RBRACK IDENT {
-                                std::string value = $5;
-                                std::string digit = $3;
-        			
-				if(find(value)) {
-					std::string message = "cannot redefine variable '") + value + "'";
+				std::string value = $5;
+				std::string digit = $3;
+				if ( find(value) ) {
+					std::string message = "cannot redefine variable '" + value + "'";
 					yyerror(message.c_str());
-				}                        
-	
+				} 
 				if (digit[0] == '0' || digit[0] == '0'){
-                                        std::string message = "Error: Array size must be greater than or equal to 0";
-                                        yyerror(message.c_str());
-                                }
-                                else{
-                                CodeNode *num = new CodeNode;
-                                num->code = digit;
-                                Type t = Array;
-                                add_variable_to_symbol_table(value, t);
+						std::string message = "Error: Array size must be greater than or equal to 0";
+						yyerror(message.c_str());
+				}
+				else{
+				CodeNode *num = new CodeNode;
+				num->code = digit;
+				Type t = Array;
+				add_variable_to_symbol_table(value, t);
 
-                                CodeNode *node = new CodeNode;
-                                std::string code = ".[] " + value + ", " + num->code + "\n";
-                                node->code = code;
-                                $$ = node;
-                                }
-                         };
+				CodeNode *node = new CodeNode;
+				std::string code = ".[] " + value + ", " + num->code + "\n";
+				node->code = code;
+				$$ = node;
+				}
+			};
 
 %%
 

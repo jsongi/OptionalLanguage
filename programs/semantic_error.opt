@@ -3,8 +3,8 @@ main: () {
   #[10] r;
   #[10] n; 
   get n;
-  n = z + 1;
-  n = n + r;
+  n <- z + 1;
+  n <- n + r;
   give n;
   next;
 }
