@@ -276,8 +276,12 @@ func_args : %empty {
 				std::string varName = line.substr(2, line.find(',') - 1);
 				Type t = Integer;
 				add_variable_to_symbol_table(varName, t);
-				node->code += "= " + varName + ", $" + std::to_string(num) + "\n";
+				std::ostringstream oss;
+				oss << num;
+				node->code += "= " + varName + ", $" + oss.str() + "\n";
 				++num;
+				oss.str("");
+				oss.clear();
 			}
 			$$ = node;
 	   	};
