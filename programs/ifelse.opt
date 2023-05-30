@@ -9,7 +9,6 @@ main: () {
   if(b >= 50)
   {
     give b;
-    exit;
   }
   otherwise
   {
