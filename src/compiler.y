@@ -179,7 +179,6 @@ struct CodeNode {
 %type <node> call_argument
 %type <node> while_label
 %type <node> if_label
-%type <node> else_label
 
 %%
 
@@ -377,7 +376,7 @@ statement : declaration ENDLINE {
 					yyerror(message.c_str());
 				} 
 				CodeNode* node = new CodeNode;
-				node->code = ":= begin_" + whileLabels.top() + "\n";
+				node->code = ":= " + whileLabels.top() + "_begin\n";
 				$$ = node;
 			} |
 			assignment ENDLINE {
@@ -514,7 +513,7 @@ ext : EXIT ENDLINE {
 				yyerror(message.c_str());
 			} 
 			CodeNode* node = new CodeNode;
-			node->code = ":= end_" + whileLabels.top() + "\n";
+			node->code = ":= " + whileLabels.top() + "_end\n";
 			$$ = node;
 	  };
 
@@ -642,16 +641,15 @@ factor : LPAREN expression RPAREN {
 ifotherwise : if_label LPAREN relational RPAREN LBRACE statements RBRACE {
 				CodeNode* node = new CodeNode;
 				std::string labelName = $1->name;
-				node->code = $3->code + $6->code + ": end_" + labelName + "\n";
+				node->code = $3->code + $6->code + ": " + labelName + "_end\n";
 				iflabels.pop();
 				labels.pop();
 				$$ = node;
 			  } | 
-			  if_label LPAREN relational RPAREN LBRACE statements RBRACE else_label LBRACE statements RBRACE {
+			  if_label LPAREN relational RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
 				CodeNode* node = new CodeNode;
 				std::string labelName = $1->name;
-				std::string elseLabelname = $8->name; //creates another label for break/continue scope
-				node->code = $3->code + $6->code  + ":= else_end_" + labelName + "\n: end_" + labelName + "\n" + $10->code + ": else_end_" + labelName + "\n"; 
+				node->code = $3->code + $6->code  + ":= else_" + labelName + "_end\n: " + labelName + "_end\n" + $10->code + ": else_" + labelName + "_end\n"; 
 				iflabels.pop();
 				labels.pop();
 				$$ = node;
@@ -660,29 +658,22 @@ ifotherwise : if_label LPAREN relational RPAREN LBRACE statements RBRACE {
 whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
 			CodeNode* node = new CodeNode;
 			std::string labelName = $1->name;
-			node->code = ": begin_" + labelName + "\n" + $3->code + $6->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
+			node->code = ": " + labelName + "_begin\n" + $3->code + $6->code + ":= " + labelName + "_begin\n: " + labelName + "_end\n";
 			labels.pop();
 			whileLabels.pop();
 			$$ = node;
 		 };
 if_label : IF {
 	CodeNode* node = new CodeNode;
-	node->name = create_label();
+	node->name = "if_" + create_label();
 	iflabels.push(node->name);
 	labels.push(node->name);
 	$$ = node;
 };
 
-else_label : ELSE {
-	CodeNode* node = new CodeNode;
-	//node->name = create_label();
-	//iflabels.push(node->name);
-	$$ = node;
-};
-
 while_label : WHILE {
 				CodeNode* node = new CodeNode;
-				node->name = create_label();
+				node->name = "loop_" + create_label();
 				whileLabels.push(node->name);
 				labels.push(node->name);
 				$$ = node;
@@ -694,7 +685,7 @@ relational : relational_args relational_symbol relational_args {
 				std::string temp = create_temp();
 				std::string initTemp = ". " + temp + "\n";
 				// symbol dst, src1, src2
-				std::string conditionalJump = std::string($2->name) + temp + ", " + std::string($1->name) + ", " + std::string($3->name) + "\n?:= end_" + labelName + ", " + temp + "\n";
+				std::string conditionalJump = std::string($2->name) + temp + ", " + std::string($1->name) + ", " + std::string($3->name) + "\n?:= " + labelName + "_end, " + temp + "\n";
 
 				node->code = initTemp + $1->code + $3->code + conditionalJump;
 				$$ = node;
