@@ -177,6 +177,8 @@ struct CodeNode {
 %type <node> call_arguments
 %type <node> call_argument
 %type <node> while_label
+%type <node> if_label
+%type <node> else_label
 
 %%
 
@@ -632,11 +634,21 @@ factor : LPAREN expression RPAREN {
 		 function_call {
 			$$ = $1;
 		 };
-ifotherwise : IF LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE {
-			  
+ifotherwise : if_label LPAREN relational RPAREN LBRACE statements RBRACE {
+				CodeNode* node = new CodeNode;
+				std::string labelName = $1->name;
+				node->code = ": if_" + labelName + "\n" + labelName + "\n: endif_" + labelName;
+				labels.pop();
+				$$ = node;
 			  } | 
-			  IF LPAREN relational_args relational_symbol relational_args RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE {
-				
+			  if_label LPAREN relational RPAREN LBRACE statements RBRACE else_label LBRACE statements RBRACE {
+				CodeNode* node = new CodeNode;
+				std::string ifLabelName = $1->name;
+				std::string elseLabelName = $8->name;
+				node->code = $3->code + ":= else_" + elseLabelName + "\n: end_" + ifLabelName + "\n" + $6->code + ":= endif_" + ifLabelName + "\n: else_" + elseLabelName + "\n" + $10->code + ": endif_" + ifLabelName + "\n"; 
+				labels.pop();
+				labels.pop();
+				$$ = node;
 			  };
 
 whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
@@ -646,12 +658,27 @@ whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
 			labels.pop();
 			$$ = node;
 		 };
+if_label : IF {
+	CodeNode* node = new CodeNode;
+	node->name = create_label();
+	labels.push(node->name);
+	$$ = node;
+};
+
+else_label : ELSE {
+	CodeNode* node = new CodeNode;
+	node->name = create_label();
+	labels.push(node->name);
+	$$ = node;
+};
+
 while_label : WHILE {
 				CodeNode* node = new CodeNode;
 				node->name = create_label();
 				labels.push(node->name);
 				$$ = node;
-			  }
+			  };
+
 relational : relational_args relational_symbol relational_args {
 				CodeNode* node = new CodeNode;
 				std::string labelName = labels.top();
