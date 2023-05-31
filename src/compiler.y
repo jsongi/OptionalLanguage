@@ -199,11 +199,11 @@ prog_start : %empty {
 			 };
 
 functions : function {
-	CodeNode *func = $1;
-	std::string code = func->code;
-	CodeNode *node = new CodeNode;
-	node->code = code;
-	$$ = node;
+				CodeNode *func = $1;
+				std::string code = func->code;
+				CodeNode *node = new CodeNode;
+				node->code = code;
+				$$ = node;
 			} |
 			function functions {
 				CodeNode *func  = $1;
@@ -214,24 +214,7 @@ functions : function {
 				$$ = node;
 			};
 
-function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RETURN return_arg ENDLINE RBRACE {
-				std::string func_name = $1;
-				CodeNode *params = $4;
-				CodeNode *body = $7;
-				CodeNode *returns = $9;
-
-				std::string code = std::string("func ") + func_name + std::string("\n");
-				code += params->code;
-				code += body->code;
-				if (func_name != "main")
-					code += returns->code;
-				
-				code += std::string("endfunc\n");
-				CodeNode *node = new CodeNode;
-				node->code = code;
-				$$ = node;
-		   } | 
-		   function_ident FUNC LPAREN func_args RPAREN LBRACE statements RBRACE {
+function : function_ident FUNC LPAREN func_args RPAREN LBRACE statements RBRACE {
 				std::string func_name = $1;
 				CodeNode *params = $4;
 				CodeNode *body = $7;
@@ -337,8 +320,8 @@ argument : expression {
 		   };
 
 statements : %empty {
-	CodeNode* node = new CodeNode;	
-	$$ = node;	 
+				CodeNode* node = new CodeNode;	
+				$$ = node;	 
 			 } |
 			 statement statements {
 				CodeNode *stmt = $1;
@@ -350,7 +333,7 @@ statements : %empty {
 			 };
 
 statement : declaration ENDLINE {
-	$$ = $1;		
+				$$ = $1;		
 			} | 
 			function_call ENDLINE {
 				$$ = $1;	
@@ -384,6 +367,11 @@ statement : declaration ENDLINE {
 			} | 
 			array_init ENDLINE {
 				$$ = $1;	
+			} |
+			RETURN return_arg ENDLINE {
+				CodeNode* node = new CodeNode;
+				node->code = $2->code;
+				$$ = node;
 			};
 
 declaration : ISV IDENT {
@@ -664,13 +652,12 @@ whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
 			$$ = node;
 		 };
 if_label : IF {
-	CodeNode* node = new CodeNode;
-	node->name = "if_" + create_label();
-	iflabels.push(node->name);
-	labels.push(node->name);
-	$$ = node;
-};
-
+				CodeNode* node = new CodeNode;
+				node->name = "if_" + create_label();
+				iflabels.push(node->name);
+				labels.push(node->name);
+				$$ = node;
+		   };
 while_label : WHILE {
 				CodeNode* node = new CodeNode;
 				node->name = "loop_" + create_label();
