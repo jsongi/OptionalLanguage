@@ -649,9 +649,9 @@ ifotherwise : if_label LPAREN relational RPAREN LBRACE statements RBRACE {
 			  } | 
 			  if_label LPAREN relational RPAREN LBRACE statements RBRACE else_label LBRACE statements RBRACE {
 				CodeNode* node = new CodeNode;
-				std::string ifLabelName = $1->name;
+				std::string labelName = $1->name;
 				std::string elseLabelname = $8->name; //creates another label for break/continue scope
-				node->code = $3->code + ":= if_" + ifLabelName + "\n: if_" + ifLabelName + "\n" + $6->code + ":= begin_" + ifLabelName + "\n: end_" + ifLabelName + "\n" + $10->code + ": begin_" + ifLabelName + "\n"; 
+				node->code = $3->code + $6->code  + ":= else_end_" + labelName + "\n: end_" + labelName + "\n" + $10->code + ": else_end_" + labelName + "\n"; 
 				iflabels.pop();
 				labels.pop();
 				$$ = node;
