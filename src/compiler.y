@@ -31,6 +31,7 @@ struct Function {
 
 std::vector <Function> symbol_table;
 std::stack <std::string> labels;
+std::stack <std::string> whileLabels;
 std::stack <std::string> iflabels;
 
 bool has_main() {
@@ -371,12 +372,12 @@ statement : declaration ENDLINE {
 				$$ = $1;
 			} | 
 			CONTINUE ENDLINE {
-				if (labels.empty()) {
+				if (whileLabels.empty()) {
 					std::string message = "cannot have a 'next' statement outside a while loop";
 					yyerror(message.c_str());
 				} 
 				CodeNode* node = new CodeNode;
-				node->code = ":= begin_" + labels.top() + "\n";
+				node->code = ":= begin_" + whileLabels.top() + "\n";
 				$$ = node;
 			} |
 			assignment ENDLINE {
@@ -508,12 +509,12 @@ give : WRITE expression ENDLINE {
 			$$ = node;
 	   };
 ext : EXIT ENDLINE {
-			if (labels.empty()) {
+			if (whileLabels.empty()) {
 				std::string message = "cannot have an 'exit' statement outside a while loop";
 				yyerror(message.c_str());
 			} 
 			CodeNode* node = new CodeNode;
-			node->code = ":= end_" + labels.top() + "\n";
+			node->code = ":= end_" + whileLabels.top() + "\n";
 			$$ = node;
 	  };
 
@@ -641,8 +642,9 @@ factor : LPAREN expression RPAREN {
 ifotherwise : if_label LPAREN relational RPAREN LBRACE statements RBRACE {
 				CodeNode* node = new CodeNode;
 				std::string labelName = $1->name;
-				node->code = $3->code + ":= if_" + labelName + "\n: if_" + labelName + "\n" + $6->code + ": begin_" + labelName + "\n";
+				node->code = $3->code + $6->code + ": end_" + labelName + "\n";
 				iflabels.pop();
+				labels.pop();
 				$$ = node;
 			  } | 
 			  if_label LPAREN relational RPAREN LBRACE statements RBRACE else_label LBRACE statements RBRACE {
@@ -651,7 +653,7 @@ ifotherwise : if_label LPAREN relational RPAREN LBRACE statements RBRACE {
 				std::string elseLabelname = $8->name; //creates another label for break/continue scope
 				node->code = $3->code + ":= if_" + ifLabelName + "\n: if_" + ifLabelName + "\n" + $6->code + ":= begin_" + ifLabelName + "\n: end_" + ifLabelName + "\n" + $10->code + ": begin_" + ifLabelName + "\n"; 
 				iflabels.pop();
-				//iflabels.pop();
+				labels.pop();
 				$$ = node;
 			  };
 
@@ -660,12 +662,14 @@ whilst : while_label LPAREN relational RPAREN LBRACE statements RBRACE {
 			std::string labelName = $1->name;
 			node->code = ": begin_" + labelName + "\n" + $3->code + $6->code + ":= begin_" + labelName + "\n: end_" + labelName + "\n";
 			labels.pop();
+			whileLabels.pop();
 			$$ = node;
 		 };
 if_label : IF {
 	CodeNode* node = new CodeNode;
 	node->name = create_label();
 	iflabels.push(node->name);
+	labels.push(node->name);
 	$$ = node;
 };
 
@@ -679,6 +683,7 @@ else_label : ELSE {
 while_label : WHILE {
 				CodeNode* node = new CodeNode;
 				node->name = create_label();
+				whileLabels.push(node->name);
 				labels.push(node->name);
 				$$ = node;
 			  };
