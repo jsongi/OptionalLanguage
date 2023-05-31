@@ -508,8 +508,12 @@ give : WRITE expression ENDLINE {
 			$$ = node;
 	   };
 ext : EXIT ENDLINE {
-	  		CodeNode* node = new CodeNode;
-			node->code = "ret 0\n";
+			if (labels.empty()) {
+				std::string message = "cannot have an 'exit' statement outside a while loop";
+				yyerror(message.c_str());
+			} 
+			CodeNode* node = new CodeNode;
+			node->code = ":= end_" + labels.top() + "\n";
 			$$ = node;
 	  };
 
