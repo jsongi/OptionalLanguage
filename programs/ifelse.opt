@@ -9,12 +9,11 @@ main: () {
   if(b >= 50)
   {
     give b;
-    exit;
   }
   otherwise
   {
     a <- b-1;
     give a;
   }
-give o;
+give c;
 }
