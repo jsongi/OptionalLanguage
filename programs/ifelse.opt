@@ -15,5 +15,5 @@ main: () {
     a <- b-1;
     give a;
   }
-give o;
+give c;
 }
