@@ -5,15 +5,16 @@ main: () {
 
 ~ main program ~
 
-  get b;
-  if(b >= 50)
+  a <- 100;
+  b <- 50;
+  if(a < b)
   {
-    give b;
+    c <- b;
   }
   otherwise
   {
-    a <- b-1;
-    give a;
+    c <- a;
+
   }
 give c;
 }
