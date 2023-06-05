@@ -1,0 +1,15 @@
+main: () {
+        # i;
+        # j;
+        i <- 0;
+        whilst(i < 2){
+                j <- 1;
+                whilst(j <= 3){
+                        give j;
+                        j <- j + 1;
+                }
+                i <- i + 1;
+
+        }
+
+}
